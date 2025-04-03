@@ -2,6 +2,12 @@
 
 [![✗](https://github.com/agustin-golmar/Flex-Bison-Compiler/actions/workflows/pipeline.yaml/badge.svg?branch=production)](https://github.com/agustin-golmar/Flex-Bison-Compiler/actions/workflows/pipeline.yaml)
 
+# A not-so-smart Javascript minifier
+
+A Javascript minifier written in C, and leavering a Flex-Bison Compiler. \
+While simple, this minifier will aim to reduce code size through a series of rules, progressing from basic textual
+transformations to more advanced semantic optimizations.
+
 # Flex-Bison-Compiler
 
 A base compiler example, developed with Flex and Bison.
