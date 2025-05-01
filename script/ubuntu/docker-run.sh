@@ -12,7 +12,8 @@ docker run \
 	--rm \
 	--user root \
 	--tty \
-	--volume .:/home/ubuntu/Flex-Bison-Compiler \
+	--name flex-bison-compiler \
+	--volume $(pwd):/home/ubuntu/Flex-Bison-Compiler \
 	--workdir=/home/ubuntu/Flex-Bison-Compiler \
 	flex-bison-compiler:latest
 
