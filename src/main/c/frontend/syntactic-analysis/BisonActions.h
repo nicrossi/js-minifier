@@ -4,6 +4,7 @@
 #include "../../shared/CompilerState.h"
 #include "../../shared/Logger.h"
 #include "../../shared/Type.h"
+#include "../../shared/ecalloc.h"
 #include "AbstractSyntaxTree.h"
 #include "SyntacticAnalyzer.h"
 #include <stdlib.h>
@@ -18,11 +19,12 @@ void shutdownBisonActionsModule();
  * Bison semantic actions.
  */
 
+StatementListItem * DeclarationStatementListItemSemanticAction(Declaration * declaration);
+StatementList * EmptyStatementListSemanticAction();
 Constant * IntegerConstantSemanticAction(const int value);
-Expression * ArithmeticExpressionSemanticAction(Expression * leftExpression, Expression * rightExpression, ExpressionType type);
-Expression * FactorExpressionSemanticAction(Factor * factor);
-Factor * ConstantFactorSemanticAction(Constant * constant);
-Factor * ExpressionFactorSemanticAction(Expression * expression);
-Program * ExpressionProgramSemanticAction(CompilerState * compilerState, Expression * expression);
-
+LexicalConst * LexicalConstSemanticAction(const char * string, Constant * constant);
+Declaration * LexicalConstDeclarationSemanticAction(LexicalConst * lexicalConst);
+Program * StatementListProgramSemanticAction(CompilerState * compilerState, StatementList * statementList);
+StatementList * StatementListSemanticAction(StatementList * statementList, StatementListItem * statementListItem);
+StatementListItem * StatementStatementListItemSemanticAction(Statement * statement);
 #endif

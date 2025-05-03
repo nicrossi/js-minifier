@@ -9,16 +9,18 @@
 
 %union {
 	/** Terminals. */
-
 	int integer;
+	char * string;
 	Token token;
 
 	/** Non-terminals. */
-
 	Constant * constant;
-	Expression * expression;
-	Factor * factor;
+	Declaration * declaration;
+	LexicalConst * lexicalConst;
 	Program * program;
+	Statement * statement;
+    StatementList * statementList;
+    StatementListItem * statementListItem;
 }
 
 /**
@@ -30,53 +32,57 @@
  * @see https://www.gnu.org/software/bison/manual/html_node/Destructor-Decl.html
  */
 %destructor { releaseConstant($$); } <constant>
-%destructor { releaseExpression($$); } <expression>
-%destructor { releaseFactor($$); } <factor>
+%destructor { releaseDeclaration($$); } <declaration>
+%destructor { releaseLexicalConst($$); } <lexicalConst>
+%destructor { releaseStatement($$); } <statement>
+%destructor { releaseStatementList($$); } <statementList>
+%destructor { releaseStatementListItem($$); } <statementListItem>
+%destructor { releaseString($$); } <string>
 
 /** Terminals. */
 %token <integer> INTEGER
-%token <token> ADD
-%token <token> CLOSE_PARENTHESIS
-%token <token> DIV
-%token <token> MUL
-%token <token> OPEN_PARENTHESIS
-%token <token> SUB
 
+%token <string> IDENTIFIER_NAME
+
+%token <token> CONST_KEYWORD
+%token <token> EQUAL
 %token <token> UNKNOWN
+%token <token> SEMICOLON
 
 /** Non-terminals. */
 %type <constant> constant
-%type <expression> expression
-%type <factor> factor
+%type <declaration> declaration
+%type <lexicalConst> lexicalConst
 %type <program> program
+%type <statement> statement
+%type <statementList> statementList
+%type <statementListItem> statementListItem
 
 /**
  * Precedence and associativity.
  *
  * @see https://www.gnu.org/software/bison/manual/html_node/Precedence.html
  */
-%left ADD SUB
-%left MUL DIV
+%right EQUAL
 
 %%
-
 // IMPORTANT: To use λ in the following grammar, use the %empty symbol.
-
-program: expression													{ $$ = ExpressionProgramSemanticAction(currentCompilerState(), $1); }
-	;
-
-expression: expression[left] ADD expression[right]					{ $$ = ArithmeticExpressionSemanticAction($left, $right, ADDITION); }
-	| expression[left] DIV expression[right]						{ $$ = ArithmeticExpressionSemanticAction($left, $right, DIVISION); }
-	| expression[left] MUL expression[right]						{ $$ = ArithmeticExpressionSemanticAction($left, $right, MULTIPLICATION); }
-	| expression[left] SUB expression[right]						{ $$ = ArithmeticExpressionSemanticAction($left, $right, SUBTRACTION); }
-	| factor														{ $$ = FactorExpressionSemanticAction($1); }
-	;
-
-factor: OPEN_PARENTHESIS expression CLOSE_PARENTHESIS				{ $$ = ExpressionFactorSemanticAction($2); }
-	| constant														{ $$ = ConstantFactorSemanticAction($1); }
-	;
-
+program: statementList												{ $$ = StatementListProgramSemanticAction(currentCompilerState(), $1); }
+    ;
+statementList: statementList statementListItem                      { $$ = StatementListSemanticAction($1, $2); }
+    | %empty                                                        { $$ = EmptyStatementListSemanticAction(); }
+    ;
+statementListItem: declaration                                      { $$ = DeclarationStatementListItemSemanticAction($1); }
+    | statement                                                     { $$ = StatementStatementListItemSemanticAction($1); }
+    ;
+declaration: lexicalConst                                           { $$ = LexicalConstDeclarationSemanticAction($1); }
+    ;
+lexicalConst:
+    CONST_KEYWORD IDENTIFIER_NAME EQUAL constant SEMICOLON          { $$ = LexicalConstSemanticAction($2, $4); }
+    ;
+// Placeholder for other types of statements
+statement: SEMICOLON
+    ;
 constant: INTEGER													{ $$ = IntegerConstantSemanticAction($1); }
 	;
-
 %%
