@@ -1,4 +1,5 @@
 #include "FlexActions.h"
+#include "../../shared/ecalloc.h"
 
 /* MODULE INTERNAL STATE */
 
@@ -57,11 +58,11 @@ void IgnoredLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
-Token ArithmeticOperatorLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	lexicalAnalyzerContext->semanticValue->token = token;
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
-	return token;
+Token IdentifierNameLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+    _logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+    lexicalAnalyzerContext->semanticValue->string = strdup(lexicalAnalyzerContext->lexeme);
+    destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+    return IDENTIFIER_NAME;
 }
 
 Token IntegerLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
@@ -71,11 +72,18 @@ Token IntegerLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	return INTEGER;
 }
 
-Token ParenthesisLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	lexicalAnalyzerContext->semanticValue->token = token;
-	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
-	return token;
+Token KeywordLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token) {
+    _logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+    lexicalAnalyzerContext->semanticValue->token = token;
+    destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+    return token;
+}
+
+Token PunctuationLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token) {
+    _logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+    lexicalAnalyzerContext->semanticValue->token = token;
+    destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+    return token;
 }
 
 Token UnknownLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
