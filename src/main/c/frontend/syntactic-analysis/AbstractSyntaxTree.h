@@ -14,64 +14,63 @@ void shutdownAbstractSyntaxTreeModule();
  * This typedefs allows self-referencing types.
  */
 
-typedef enum ExpressionType ExpressionType;
-typedef enum FactorType FactorType;
 
 typedef struct Constant Constant;
-typedef struct Expression Expression;
-typedef struct Factor Factor;
+typedef struct Declaration Declaration;
+typedef struct LexicalConst LexicalConst;
 typedef struct Program Program;
+typedef struct Statement Statement;
+typedef struct StatementList StatementList;
+typedef struct StatementListItem StatementListItem;
 
 /**
  * Node types for the Abstract Syntax Tree (AST).
  */
 
-enum ExpressionType {
-	ADDITION,
-	DIVISION,
-	FACTOR,
-	MULTIPLICATION,
-	SUBTRACTION
-};
-
-enum FactorType {
-	CONSTANT,
-	EXPRESSION
-};
-
 struct Constant {
 	int value;
 };
 
-struct Factor {
-	union {
-		Constant * constant;
-		Expression * expression;
-	};
-	FactorType type;
+struct Declaration {
+    LexicalConst * lexicalConst;
 };
 
-struct Expression {
-	union {
-		Factor * factor;
-		struct {
-			Expression * leftExpression;
-			Expression * rightExpression;
-		};
-	};
-	ExpressionType type;
+struct LexicalConst {
+    char * identifierName;
+    Constant * constant;
+};
+
+struct Statement {
+    // Placeholder for different types of statements
+    int type;
+};
+
+struct StatementList {
+    StatementListItem * head;
+    StatementListItem * tail;
+};
+
+struct StatementListItem {
+    union {
+        Declaration * declaration;
+        Statement * statement;
+    };
+    StatementListItem * next;
 };
 
 struct Program {
-	Expression * expression;
+    StatementList * statementList;
 };
 
 /**
  * Node recursive destructors.
  */
 void releaseConstant(Constant * constant);
-void releaseExpression(Expression * expression);
-void releaseFactor(Factor * factor);
+void releaseDeclaration(Declaration * declaration);
+void releaseLexicalConst(LexicalConst * lexicalConst);
 void releaseProgram(Program * program);
-
+void releaseStatement(Statement * statement);
+void releaseStatementList(StatementList * statementList);
+void releaseStatementListItem(StatementListItem * statementListItem);
+void releaseString(char * string);
 #endif

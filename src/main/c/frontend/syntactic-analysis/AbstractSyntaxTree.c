@@ -23,44 +23,65 @@ void releaseConstant(Constant * constant) {
 	}
 }
 
-void releaseExpression(Expression * expression) {
-	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (expression != NULL) {
-		switch (expression->type) {
-			case ADDITION:
-			case DIVISION:
-			case MULTIPLICATION:
-			case SUBTRACTION:
-				releaseExpression(expression->leftExpression);
-				releaseExpression(expression->rightExpression);
-				break;
-			case FACTOR:
-				releaseFactor(expression->factor);
-				break;
-		}
-		free(expression);
-	}
+void releaseDeclaration(Declaration * declaration) {
+    logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (declaration != NULL) {
+        releaseLexicalConst(declaration->lexicalConst);
+        free(declaration);
+    }
 }
 
-void releaseFactor(Factor * factor) {
-	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (factor != NULL) {
-		switch (factor->type) {
-			case CONSTANT:
-				releaseConstant(factor->constant);
-				break;
-			case EXPRESSION:
-				releaseExpression(factor->expression);
-				break;
-		}
-		free(factor);
-	}
+void releaseLexicalConst(LexicalConst * lexicalConst) {
+    logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (lexicalConst != NULL) {
+        free(lexicalConst->identifierName);
+        releaseConstant(lexicalConst->constant);
+        free(lexicalConst);
+    }
+}
+
+void releaseStatement(Statement * statement) {
+    logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (statement != NULL) {
+        // TODO: Add specific cleanup logic for different statement types
+        free(statement);
+    }
+}
+
+void releaseStatementList(StatementList * statementList) {
+    logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (statementList != NULL) {
+        StatementListItem * current = statementList->head;
+        while (current != NULL) {
+            StatementListItem * next = current->next;
+            releaseStatementListItem(current);
+            current = next;
+        }
+        free(statementList);
+    }
+}
+
+void releaseStatementListItem(StatementListItem * statementListItem) {
+    logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (statementListItem != NULL) {
+        if (statementListItem->declaration != NULL) {
+            releaseDeclaration(statementListItem->declaration);
+        } else if (statementListItem->statement != NULL) {
+            releaseStatement(statementListItem->statement);
+        }
+        free(statementListItem);
+    }
+}
+
+void releaseString(char * string) {
+    logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    free(string);
 }
 
 void releaseProgram(Program * program) {
-	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (program != NULL) {
-		releaseExpression(program->expression);
-		free(program);
-	}
+    logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (program != NULL) {
+        releaseStatementList(program->statementList);
+        free(program);
+    }
 }
