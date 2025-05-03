@@ -15,6 +15,9 @@ docker run \
 	--name flex-bison-compiler \
 	--volume $(pwd):/home/ubuntu/Flex-Bison-Compiler \
 	--workdir=/home/ubuntu/Flex-Bison-Compiler \
+	--env TEST=/home/ubuntu/Flex-Bison-Compiler/src/test/c \
+	--env LOG_IGNORED_LEXEMES=true \
+	--env LOGGING_LEVEL=ALL \
 	flex-bison-compiler:latest
 
 echo "All done."
