@@ -78,7 +78,10 @@ statementListItem: declaration                                      { $$ = Decla
 declaration: lexicalConst                                           { $$ = LexicalConstDeclarationSemanticAction($1); }
     ;
 lexicalConst:
-    CONST_KEYWORD IDENTIFIER_NAME EQUAL constant SEMICOLON          { $$ = LexicalConstSemanticAction($2, $4); }
+    CONST_KEYWORD IDENTIFIER_NAME EQUAL constant optionalSemicolon  { $$ = LexicalConstSemanticAction($2, $4); }
+    ;
+optionalSemicolon: SEMICOLON
+    | %empty
     ;
 // Placeholder for other types of statements
 statement: SEMICOLON
