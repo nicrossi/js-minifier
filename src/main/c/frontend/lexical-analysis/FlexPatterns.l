@@ -34,6 +34,7 @@
 "const"                             { return KeywordLexemeAction(createLexicalAnalyzerContext(), CONST_KEYWORD); }
 "="                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), EQUAL); }
 ";"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), SEMICOLON); }
+","                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), COMMA); }
 
 [a-zA-Z_\\$][a-zA-Z0-9_\\$]*        { return IdentifierNameLexemeAction(createLexicalAnalyzerContext()); }
 
