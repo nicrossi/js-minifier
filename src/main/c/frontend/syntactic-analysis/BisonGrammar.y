@@ -14,13 +14,15 @@
 	Token token;
 
 	/** Non-terminals. */
-	Constant * constant;
 	Declaration * declaration;
+	Expression * expression;
 	LexicalConst * lexicalConst;
 	Program * program;
 	Statement * statement;
     StatementList * statementList;
     StatementListItem * statementListItem;
+    VariableDeclarator * variableDeclarator;
+    VariableDeclaratorList * variableDeclaratorList;
 }
 
 /**
@@ -31,32 +33,38 @@
  *
  * @see https://www.gnu.org/software/bison/manual/html_node/Destructor-Decl.html
  */
-%destructor { releaseConstant($$); } <constant>
 %destructor { releaseDeclaration($$); } <declaration>
+%destructor { releaseExpression($$); } <expression>
 %destructor { releaseLexicalConst($$); } <lexicalConst>
 %destructor { releaseStatement($$); } <statement>
 %destructor { releaseStatementList($$); } <statementList>
 %destructor { releaseStatementListItem($$); } <statementListItem>
 %destructor { releaseString($$); } <string>
+%destructor { releaseVariableDeclarator($$); } <variableDeclarator>
+%destructor { releaseVariableDeclaratorList($$); } <variableDeclaratorList>
 
 /** Terminals. */
 %token <integer> INTEGER
 
 %token <string> IDENTIFIER_NAME
 
+%token <token> COMMA
 %token <token> CONST_KEYWORD
 %token <token> EQUAL
 %token <token> UNKNOWN
 %token <token> SEMICOLON
 
 /** Non-terminals. */
-%type <constant> constant
+%type <expression> assignmentExpression
 %type <declaration> declaration
+%type <expression> expression
 %type <lexicalConst> lexicalConst
 %type <program> program
 %type <statement> statement
 %type <statementList> statementList
 %type <statementListItem> statementListItem
+%type <variableDeclarator> variableDeclarator
+%type <variableDeclaratorList> variableDeclaratorList
 
 /**
  * Precedence and associativity.
@@ -73,12 +81,24 @@ statementList: statementList statementListItem                      { $$ = State
     | %empty                                                        { $$ = EmptyStatementListSemanticAction(); }
     ;
 statementListItem: declaration                                      { $$ = DeclarationStatementListItemSemanticAction($1); }
-    | statement                                                     { $$ = StatementStatementListItemSemanticAction($1); }
+//    | statement                                                     { $$ = StatementStatementListItemSemanticAction($1); }
     ;
 declaration: lexicalConst                                           { $$ = LexicalConstDeclarationSemanticAction($1); }
     ;
+expression: assignmentExpression                                     { $$ = AssignmentExpressionSemanticAction($1); }
+    | expression COMMA assignmentExpression                          { $$ = CommaExpressionSemanticAction($1, $3); }
+    ;
+variableDeclarator:
+    IDENTIFIER_NAME EQUAL assignmentExpression                      { $$ = VariableDeclaratorSemanticAction($1, $3); }
+    ;
+variableDeclaratorList: variableDeclarator                          { $$ = VariableDeclaratorListSemanticAction($1); }
+    | variableDeclaratorList COMMA variableDeclarator               { $$ = AppendVariableDeclaratorListSemanticAction($1, $3); }
+    ;
 lexicalConst:
-    CONST_KEYWORD IDENTIFIER_NAME EQUAL constant optionalSemicolon  { $$ = LexicalConstSemanticAction($2, $4); }
+    CONST_KEYWORD variableDeclaratorList optionalSemicolon          { $$ = LexicalConstSemanticAction($2); }
+    ;
+assignmentExpression: INTEGER                                       { $$ = IntegerExpressionSemanticAction($1); }
+//    | assignmentExpression EQUAL assignmentExpression               { $$ = ChainedAssignmentSemanticAction($1, $3); }
     ;
 optionalSemicolon: SEMICOLON
     | %empty
@@ -86,6 +106,4 @@ optionalSemicolon: SEMICOLON
 // Placeholder for other types of statements
 statement: SEMICOLON
     ;
-constant: INTEGER													{ $$ = IntegerConstantSemanticAction($1); }
-	;
 %%
