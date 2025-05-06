@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "BisonActions.h"
 
 /* MODULE INTERNAL STATE */
@@ -30,6 +31,39 @@ static void _logSyntacticAnalyzerAction(const char * functionName) {
 }
 
 /* PUBLIC FUNCTIONS */
+VariableDeclaratorList * AppendVariableDeclaratorListSemanticAction(VariableDeclaratorList * list, VariableDeclarator * variableDeclarator) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    assert(list->head != NULL);
+    variableDeclarator->next = NULL;
+    list->tail->next = variableDeclarator;
+    list->tail = variableDeclarator;
+    return list;
+}
+
+Expression * AssignmentExpressionSemanticAction(Expression * expression) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    return expression;
+}
+
+Expression * ChainedAssignmentSemanticAction(Expression * left, Expression * right) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Expression * expression = ecalloc(1, sizeof(Expression));
+    expression->type = ASSIGNMENT;
+    expression->binaryExpression.leftExpression = left;
+    expression->binaryExpression.rightExpression = right;
+    return expression;
+}
+
+Expression * CommaExpressionSemanticAction(Expression * expression, Expression * assignmentExpression) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    // Binary expression for the comma-separated expressions
+    Expression * newExpression = ecalloc(1, sizeof(Expression));
+    newExpression->type = ASSIGNMENT; // TODO: Change to appropriate type
+    newExpression->binaryExpression.leftExpression = expression;
+    newExpression->binaryExpression.rightExpression = assignmentExpression;
+    return newExpression;
+}
+
 StatementListItem * DeclarationStatementListItemSemanticAction(Declaration * declaration) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     StatementListItem * item = ecalloc(1, sizeof(StatementListItem));
@@ -45,19 +79,18 @@ StatementList * EmptyStatementListSemanticAction() {
     return statementList;
 }
 
-Constant * IntegerConstantSemanticAction(const int value) {
+Expression * IntegerExpressionSemanticAction(const int value) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Constant * constant = calloc(1, sizeof(Constant));
-	constant->value = value;
-	return constant;
+	Expression * expression = calloc(1, sizeof(Expression));
+	expression->type = ASSIGNMENT;
+    expression->value = value;
+	return expression;
 }
 
-LexicalConst * LexicalConstSemanticAction(const char * string, Constant * constant) {
+LexicalConst * LexicalConstSemanticAction(VariableDeclaratorList * variableDeclaratorList) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     LexicalConst * lexicalConst = ecalloc(1, sizeof(LexicalConst));
-    lexicalConst->identifierName = strdup(string);
-    free((char *) string);
-    lexicalConst->constant = constant;
+    lexicalConst->declaratorList = variableDeclaratorList;
     return lexicalConst;
 }
 
@@ -101,4 +134,21 @@ StatementListItem * StatementStatementListItemSemanticAction(Statement * stateme
     item->statement = statement;
     item->next = NULL;
     return item;
+}
+
+VariableDeclaratorList * VariableDeclaratorListSemanticAction(VariableDeclarator * variableDeclarator) {
+    _logSyntacticAnalyzerAction(__FUNCTION__ );
+    VariableDeclaratorList * variableDeclaratorList = ecalloc(1, sizeof(VariableDeclaratorList));
+    variableDeclaratorList->head = variableDeclaratorList->tail = variableDeclarator;
+    return variableDeclaratorList;
+}
+
+VariableDeclarator * VariableDeclaratorSemanticAction(const char * identifier, Expression * initializer) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    VariableDeclarator * declarator = ecalloc(1, sizeof(VariableDeclarator));
+    declarator->identifier = strdup(identifier);
+    declarator->initializer = initializer;
+    declarator->next = NULL;
+    free((char *) identifier);
+    return declarator;
 }

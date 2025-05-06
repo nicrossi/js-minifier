@@ -14,30 +14,44 @@ void shutdownAbstractSyntaxTreeModule();
  * This typedefs allows self-referencing types.
  */
 
-
-typedef struct Constant Constant;
 typedef struct Declaration Declaration;
 typedef struct LexicalConst LexicalConst;
 typedef struct Program Program;
 typedef struct Statement Statement;
 typedef struct StatementList StatementList;
 typedef struct StatementListItem StatementListItem;
+typedef struct VariableDeclarator VariableDeclarator;
+typedef struct VariableDeclaratorList VariableDeclaratorList;
+typedef struct Expression Expression;
+
+typedef enum {
+    ASSIGNMENT,
+    IDENTIFIER
+} ExpressionType;
 
 /**
  * Node types for the Abstract Syntax Tree (AST).
  */
-
-struct Constant {
-	int value;
-};
+typedef struct {
+    Expression * leftExpression;
+    Expression * rightExpression;
+} BinaryExpression;
 
 struct Declaration {
     LexicalConst * lexicalConst;
 };
 
+struct Expression {
+    ExpressionType type;
+    union {
+        BinaryExpression binaryExpression;
+        char * identifierName;
+        int value;
+    };
+};
+
 struct LexicalConst {
-    char * identifierName;
-    Constant * constant;
+    VariableDeclaratorList * declaratorList;
 };
 
 struct Statement {
@@ -58,6 +72,17 @@ struct StatementListItem {
     StatementListItem * next;
 };
 
+struct VariableDeclarator {
+    char * identifier;
+    Expression * initializer;
+    VariableDeclarator * next;
+};
+
+struct VariableDeclaratorList {
+    VariableDeclarator * head;
+    VariableDeclarator * tail;
+};
+
 struct Program {
     StatementList * statementList;
 };
@@ -65,12 +90,14 @@ struct Program {
 /**
  * Node recursive destructors.
  */
-void releaseConstant(Constant * constant);
 void releaseDeclaration(Declaration * declaration);
+void releaseExpression(Expression * expression);
 void releaseLexicalConst(LexicalConst * lexicalConst);
 void releaseProgram(Program * program);
 void releaseStatement(Statement * statement);
 void releaseStatementList(StatementList * statementList);
 void releaseStatementListItem(StatementListItem * statementListItem);
+void releaseVariableDeclarator(VariableDeclarator * variableDeclarator);
+void releaseVariableDeclaratorList(VariableDeclaratorList * variableDeclaratorList);
 void releaseString(char * string);
 #endif

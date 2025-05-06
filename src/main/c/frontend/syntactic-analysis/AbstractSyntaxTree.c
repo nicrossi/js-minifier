@@ -5,7 +5,7 @@
 static Logger * _logger = NULL;
 
 void initializeAbstractSyntaxTreeModule() {
-	_logger = createLogger("AbstractSyntxTree");
+	_logger = createLogger("AbstractSyntaxTree");
 }
 
 void shutdownAbstractSyntaxTreeModule() {
@@ -15,28 +15,30 @@ void shutdownAbstractSyntaxTreeModule() {
 }
 
 /** PUBLIC FUNCTIONS */
-
-void releaseConstant(Constant * constant) {
-	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (constant != NULL) {
-		free(constant);
-	}
-}
-
 void releaseDeclaration(Declaration * declaration) {
     logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
     if (declaration != NULL) {
         releaseLexicalConst(declaration->lexicalConst);
         free(declaration);
+        declaration = NULL;
+    }
+}
+
+void releaseExpression(Expression * expression) {
+    logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (expression != NULL) {
+        // TODO: Add specific cleanup logic for different expression types
+        free(expression);
+        expression = NULL;
     }
 }
 
 void releaseLexicalConst(LexicalConst * lexicalConst) {
     logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
     if (lexicalConst != NULL) {
-        free(lexicalConst->identifierName);
-        releaseConstant(lexicalConst->constant);
+        releaseVariableDeclaratorList(lexicalConst->declaratorList);
         free(lexicalConst);
+        lexicalConst = NULL;
     }
 }
 
@@ -58,6 +60,7 @@ void releaseStatementList(StatementList * statementList) {
             current = next;
         }
         free(statementList);
+        statementList = NULL;
     }
 }
 
@@ -70,12 +73,38 @@ void releaseStatementListItem(StatementListItem * statementListItem) {
             releaseStatement(statementListItem->statement);
         }
         free(statementListItem);
+        statementListItem = NULL;
     }
 }
 
 void releaseString(char * string) {
     logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
     free(string);
+    string = NULL;
+}
+
+void releaseVariableDeclarator(VariableDeclarator * variableDeclarator) {
+    logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (variableDeclarator != NULL) {
+        free(variableDeclarator->identifier);
+        releaseExpression(variableDeclarator->initializer);
+        free(variableDeclarator);
+        variableDeclarator = NULL;
+    }
+}
+
+void releaseVariableDeclaratorList(VariableDeclaratorList * variableDeclaratorList) {
+    logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (variableDeclaratorList != NULL) {
+        VariableDeclarator * current = variableDeclaratorList->head;
+        while (current != NULL) {
+            VariableDeclarator * next = current->next;
+            releaseVariableDeclarator(current);
+            current = next;
+        }
+        free(variableDeclaratorList);
+        variableDeclaratorList = NULL;
+    }
 }
 
 void releaseProgram(Program * program) {
@@ -83,5 +112,6 @@ void releaseProgram(Program * program) {
     if (program != NULL) {
         releaseStatementList(program->statementList);
         free(program);
+        program = NULL;
     }
 }

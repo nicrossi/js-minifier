@@ -18,13 +18,17 @@ void shutdownBisonActionsModule();
 /**
  * Bison semantic actions.
  */
-
+VariableDeclaratorList * AppendVariableDeclaratorListSemanticAction(VariableDeclaratorList * list, VariableDeclarator * variableDeclarator);
+Expression * AssigmentExpressionSemanticAction(Expression * expression);
+Expression * CommaExpressionSemanticAction(Expression * expression, Expression * assignmentExpression);
 StatementListItem * DeclarationStatementListItemSemanticAction(Declaration * declaration);
 StatementList * EmptyStatementListSemanticAction();
-Constant * IntegerConstantSemanticAction(const int value);
-LexicalConst * LexicalConstSemanticAction(const char * string, Constant * constant);
+Expression * IntegerExpressionSemanticAction(int value);
+LexicalConst * LexicalConstSemanticAction(VariableDeclaratorList * variableDeclaratorList);
 Declaration * LexicalConstDeclarationSemanticAction(LexicalConst * lexicalConst);
 Program * StatementListProgramSemanticAction(CompilerState * compilerState, StatementList * statementList);
 StatementList * StatementListSemanticAction(StatementList * statementList, StatementListItem * statementListItem);
 StatementListItem * StatementStatementListItemSemanticAction(Statement * statement);
+VariableDeclaratorList * VariableDeclaratorListSemanticAction(VariableDeclarator * variableDeclarator);
+VariableDeclarator * VariableDeclaratorSemanticAction(const char * identifier, Expression * initializer);
 #endif
