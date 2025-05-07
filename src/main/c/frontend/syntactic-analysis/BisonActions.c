@@ -87,17 +87,18 @@ Expression * IntegerExpressionSemanticAction(const int value) {
 	return expression;
 }
 
-LexicalConst * LexicalConstSemanticAction(VariableDeclaratorList * variableDeclaratorList) {
+LexicalDeclaration * CreateLexicalDeclarationSemanticAction(LexicalDeclarationType type, VariableDeclaratorList * variableDeclaratorList) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
-    LexicalConst * lexicalConst = ecalloc(1, sizeof(LexicalConst));
-    lexicalConst->declaratorList = variableDeclaratorList;
-    return lexicalConst;
+    LexicalDeclaration * lexicalDeclaration = ecalloc(1, sizeof(LexicalDeclaration));
+    lexicalDeclaration->type = type;
+    lexicalDeclaration->declaratorList = variableDeclaratorList;
+    return lexicalDeclaration;
 }
 
-Declaration * LexicalConstDeclarationSemanticAction(LexicalConst * lexicalConst) {
+Declaration * LexicalDeclarationSemanticAction(LexicalDeclaration * lexicalDeclaration) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     Declaration * declaration = ecalloc(1, sizeof(Declaration));
-    declaration->lexicalConst = lexicalConst;
+    declaration->lexicalDeclaration = lexicalDeclaration;
     return declaration;
 }
 

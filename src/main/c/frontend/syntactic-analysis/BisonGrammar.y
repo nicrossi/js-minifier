@@ -16,7 +16,7 @@
 	/** Non-terminals. */
 	Declaration * declaration;
 	Expression * expression;
-	LexicalConst * lexicalConst;
+	LexicalDeclaration * lexicalDeclaration;
 	Program * program;
 	Statement * statement;
     StatementList * statementList;
@@ -35,7 +35,7 @@
  */
 %destructor { releaseDeclaration($$); } <declaration>
 %destructor { releaseExpression($$); } <expression>
-%destructor { releaseLexicalConst($$); } <lexicalConst>
+%destructor { releaseLexicalDeclaration($$); } <lexicalDeclaration>
 %destructor { releaseStatement($$); } <statement>
 %destructor { releaseStatementList($$); } <statementList>
 %destructor { releaseStatementListItem($$); } <statementListItem>
@@ -51,6 +51,7 @@
 %token <token> COMMA
 %token <token> CONST_KEYWORD
 %token <token> EQUAL
+%token <token> LET_KEYWORD
 %token <token> UNKNOWN
 %token <token> SEMICOLON
 
@@ -58,7 +59,7 @@
 %type <expression> assignmentExpression
 %type <declaration> declaration
 %type <expression> expression
-%type <lexicalConst> lexicalConst
+%type <lexicalDeclaration> lexicalDeclaration
 %type <program> program
 %type <statement> statement
 %type <statementList> statementList
@@ -83,7 +84,7 @@ statementList: statementList statementListItem                      { $$ = State
 statementListItem: declaration                                      { $$ = DeclarationStatementListItemSemanticAction($1); }
 //    | statement                                                     { $$ = StatementStatementListItemSemanticAction($1); }
     ;
-declaration: lexicalConst                                           { $$ = LexicalConstDeclarationSemanticAction($1); }
+declaration: lexicalDeclaration                                     { $$ = LexicalDeclarationSemanticAction($1); }
     ;
 expression: assignmentExpression                                     { $$ = AssignmentExpressionSemanticAction($1); }
     | expression COMMA assignmentExpression                          { $$ = CommaExpressionSemanticAction($1, $3); }
@@ -94,8 +95,9 @@ variableDeclarator:
 variableDeclaratorList: variableDeclarator                          { $$ = VariableDeclaratorListSemanticAction($1); }
     | variableDeclaratorList COMMA variableDeclarator               { $$ = AppendVariableDeclaratorListSemanticAction($1, $3); }
     ;
-lexicalConst:
-    CONST_KEYWORD variableDeclaratorList optionalSemicolon          { $$ = LexicalConstSemanticAction($2); }
+lexicalDeclaration:
+    CONST_KEYWORD variableDeclaratorList optionalSemicolon          { $$ = CreateLexicalDeclarationSemanticAction(CONST_DECLARATION, $2); }
+    | LET_KEYWORD variableDeclaratorList optionalSemicolon          { $$ = CreateLexicalDeclarationSemanticAction(LET_DECLARATION, $2); }
     ;
 assignmentExpression: INTEGER                                       { $$ = IntegerExpressionSemanticAction($1); }
 //    | assignmentExpression EQUAL assignmentExpression               { $$ = ChainedAssignmentSemanticAction($1, $3); }

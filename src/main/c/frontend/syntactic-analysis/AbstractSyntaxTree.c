@@ -18,7 +18,7 @@ void shutdownAbstractSyntaxTreeModule() {
 void releaseDeclaration(Declaration * declaration) {
     logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
     if (declaration != NULL) {
-        releaseLexicalConst(declaration->lexicalConst);
+        releaseLexicalDeclaration(declaration->lexicalDeclaration);
         free(declaration);
         declaration = NULL;
     }
@@ -33,7 +33,7 @@ void releaseExpression(Expression * expression) {
     }
 }
 
-void releaseLexicalConst(LexicalConst * lexicalConst) {
+void releaseLexicalDeclaration(LexicalDeclaration * lexicalConst) {
     logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
     if (lexicalConst != NULL) {
         releaseVariableDeclaratorList(lexicalConst->declaratorList);

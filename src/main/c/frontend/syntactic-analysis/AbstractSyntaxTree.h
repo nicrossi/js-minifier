@@ -15,7 +15,7 @@ void shutdownAbstractSyntaxTreeModule();
  */
 
 typedef struct Declaration Declaration;
-typedef struct LexicalConst LexicalConst;
+typedef struct LexicalDeclaration LexicalDeclaration;
 typedef struct Program Program;
 typedef struct Statement Statement;
 typedef struct StatementList StatementList;
@@ -29,6 +29,11 @@ typedef enum {
     IDENTIFIER
 } ExpressionType;
 
+typedef enum {
+    LET_DECLARATION,
+    CONST_DECLARATION
+} LexicalDeclarationType;
+
 /**
  * Node types for the Abstract Syntax Tree (AST).
  */
@@ -38,7 +43,7 @@ typedef struct {
 } BinaryExpression;
 
 struct Declaration {
-    LexicalConst * lexicalConst;
+    LexicalDeclaration * lexicalDeclaration;
 };
 
 struct Expression {
@@ -50,7 +55,8 @@ struct Expression {
     };
 };
 
-struct LexicalConst {
+struct LexicalDeclaration {
+    LexicalDeclarationType type;
     VariableDeclaratorList * declaratorList;
 };
 
@@ -92,12 +98,12 @@ struct Program {
  */
 void releaseDeclaration(Declaration * declaration);
 void releaseExpression(Expression * expression);
-void releaseLexicalConst(LexicalConst * lexicalConst);
+void releaseLexicalDeclaration(LexicalDeclaration * lexicalConst);
 void releaseProgram(Program * program);
 void releaseStatement(Statement * statement);
 void releaseStatementList(StatementList * statementList);
+void releaseString(char * string);
 void releaseStatementListItem(StatementListItem * statementListItem);
 void releaseVariableDeclarator(VariableDeclarator * variableDeclarator);
 void releaseVariableDeclaratorList(VariableDeclaratorList * variableDeclaratorList);
-void releaseString(char * string);
 #endif

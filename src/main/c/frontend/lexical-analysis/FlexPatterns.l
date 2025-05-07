@@ -32,6 +32,7 @@
 <MULTILINE_COMMENT>.				{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 
 "const"                             { return KeywordLexemeAction(createLexicalAnalyzerContext(), CONST_KEYWORD); }
+"let"                               { return KeywordLexemeAction(createLexicalAnalyzerContext(), LET_KEYWORD); }
 "="                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), EQUAL); }
 ";"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), SEMICOLON); }
 ","                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), COMMA); }

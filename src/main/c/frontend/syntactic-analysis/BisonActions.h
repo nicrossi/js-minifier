@@ -24,8 +24,8 @@ Expression * CommaExpressionSemanticAction(Expression * expression, Expression *
 StatementListItem * DeclarationStatementListItemSemanticAction(Declaration * declaration);
 StatementList * EmptyStatementListSemanticAction();
 Expression * IntegerExpressionSemanticAction(int value);
-LexicalConst * LexicalConstSemanticAction(VariableDeclaratorList * variableDeclaratorList);
-Declaration * LexicalConstDeclarationSemanticAction(LexicalConst * lexicalConst);
+LexicalDeclaration * CreateLexicalDeclarationSemanticAction(LexicalDeclarationType type, VariableDeclaratorList * variableDeclaratorList);
+Declaration * LexicalDeclarationSemanticAction(LexicalDeclaration * lexicalConst);
 Program * StatementListProgramSemanticAction(CompilerState * compilerState, StatementList * statementList);
 StatementList * StatementListSemanticAction(StatementList * statementList, StatementListItem * statementListItem);
 StatementListItem * StatementStatementListItemSemanticAction(Statement * statement);
