@@ -40,8 +40,17 @@ VariableDeclaratorList * AppendVariableDeclaratorListSemanticAction(VariableDecl
     return list;
 }
 
-Expression * AssignmentExpressionSemanticAction(Expression * expression) {
+Expression * AssignmentExpressionSemanticAction(VariableDeclarator * variableDeclarator) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
+    Expression * expression = ecalloc(1, sizeof(Expression));
+    expression->type = ASSIGNMENT;
+    expression->binaryExpression.leftExpression = ecalloc(1, sizeof(Expression));
+    expression->binaryExpression.leftExpression->type = IDENTIFIER;
+    expression->binaryExpression.leftExpression->identifierName = strdup(variableDeclarator->identifier);
+    expression->binaryExpression.rightExpression = variableDeclarator->initializer;
+    free(variableDeclarator->identifier);
+    free(variableDeclarator);
+    variableDeclarator = NULL;
     return expression;
 }
 
@@ -68,6 +77,7 @@ StatementListItem * DeclarationStatementListItemSemanticAction(Declaration * dec
     _logSyntacticAnalyzerAction(__FUNCTION__);
     StatementListItem * item = ecalloc(1, sizeof(StatementListItem));
     item->declaration = declaration;
+    item->type = DECLARATION_STATEMENT;
     item->next = NULL;
     return item;
 }
@@ -79,10 +89,27 @@ StatementList * EmptyStatementListSemanticAction() {
     return statementList;
 }
 
+Statement * ExpressionStatementSemanticAction(Expression * expression) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Statement * statement = ecalloc(1, sizeof(Statement));
+    statement->type = EXPRESSION_STATEMENT;
+    statement->expression = expression;
+    return statement;
+}
+
+Expression * IdentifierExpressionSemanticAction(const char * identifier) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Expression * expression = ecalloc(1, sizeof(Expression));
+    expression->type = IDENTIFIER;
+    expression->identifierName = strdup(identifier);
+    free((char *) identifier);
+    return expression;
+}
+
 Expression * IntegerExpressionSemanticAction(const int value) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Expression * expression = calloc(1, sizeof(Expression));
-	expression->type = ASSIGNMENT;
+	expression->type = INTEGER_EXPRESSION;
     expression->value = value;
 	return expression;
 }
@@ -131,8 +158,10 @@ StatementList * StatementListSemanticAction(StatementList * statementList, State
 
 StatementListItem * StatementStatementListItemSemanticAction(Statement * statement) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
+    assert(statement != NULL);
     StatementListItem * item = ecalloc(1, sizeof(StatementListItem));
     item->statement = statement;
+    item->type = statement->type;
     item->next = NULL;
     return item;
 }

@@ -28,6 +28,17 @@ void releaseExpression(Expression * expression) {
     logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
     if (expression != NULL) {
         // TODO: Add specific cleanup logic for different expression types
+        switch(expression->type) {
+            case ASSIGNMENT:
+                releaseExpression(expression->binaryExpression.leftExpression);
+                releaseExpression(expression->binaryExpression.rightExpression);
+                break;
+            case IDENTIFIER:
+                free(expression->identifierName);
+                break;
+            default:
+                logWarning(_logger, "Unknown expression type: %d", expression->type);
+        }
         free(expression);
         expression = NULL;
     }
@@ -46,6 +57,13 @@ void releaseStatement(Statement * statement) {
     logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
     if (statement != NULL) {
         // TODO: Add specific cleanup logic for different statement types
+        switch(statement->type) {
+            case EXPRESSION_STATEMENT:
+                releaseExpression(statement->expression);
+                break;
+            default:
+                logWarning(_logger, "Unknown statement type: %d", statement->type);
+        }
         free(statement);
     }
 }
@@ -67,7 +85,7 @@ void releaseStatementList(StatementList * statementList) {
 void releaseStatementListItem(StatementListItem * statementListItem) {
     logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
     if (statementListItem != NULL) {
-        if (statementListItem->declaration != NULL) {
+        if (statementListItem->type == DECLARATION_STATEMENT) {
             releaseDeclaration(statementListItem->declaration);
         } else if (statementListItem->statement != NULL) {
             releaseStatement(statementListItem->statement);

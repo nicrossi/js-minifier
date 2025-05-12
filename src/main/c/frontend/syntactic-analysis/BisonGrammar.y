@@ -82,12 +82,13 @@ statementList: statementList statementListItem                      { $$ = State
     | %empty                                                        { $$ = EmptyStatementListSemanticAction(); }
     ;
 statementListItem: declaration                                      { $$ = DeclarationStatementListItemSemanticAction($1); }
-//    | statement                                                     { $$ = StatementStatementListItemSemanticAction($1); }
+    | statement                                                     { $$ = StatementStatementListItemSemanticAction($1); }
     ;
 declaration: lexicalDeclaration                                     { $$ = LexicalDeclarationSemanticAction($1); }
     ;
-expression: assignmentExpression                                     { $$ = AssignmentExpressionSemanticAction($1); }
-    | expression COMMA assignmentExpression                          { $$ = CommaExpressionSemanticAction($1, $3); }
+expression: variableDeclarator                                      { $$ = AssignmentExpressionSemanticAction($1); }
+    | expression COMMA assignmentExpression                         { $$ = CommaExpressionSemanticAction($1, $3); }
+    | expression EQUAL assignmentExpression                         { $$ = ChainedAssignmentSemanticAction($1, $3); }
     ;
 variableDeclarator:
     IDENTIFIER_NAME EQUAL assignmentExpression                      { $$ = VariableDeclaratorSemanticAction($1, $3); }
@@ -100,12 +101,11 @@ lexicalDeclaration:
     | LET_KEYWORD variableDeclaratorList optionalSemicolon          { $$ = CreateLexicalDeclarationSemanticAction(LET_DECLARATION, $2); }
     ;
 assignmentExpression: INTEGER                                       { $$ = IntegerExpressionSemanticAction($1); }
-//    | assignmentExpression EQUAL assignmentExpression               { $$ = ChainedAssignmentSemanticAction($1, $3); }
+    | IDENTIFIER_NAME                                               { $$ = IdentifierExpressionSemanticAction($1); }
     ;
 optionalSemicolon: SEMICOLON
     | %empty
     ;
-// Placeholder for other types of statements
-statement: SEMICOLON
+statement: expression optionalSemicolon                            { $$ = ExpressionStatementSemanticAction($1); }
     ;
 %%

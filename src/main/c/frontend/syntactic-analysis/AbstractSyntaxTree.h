@@ -26,13 +26,19 @@ typedef struct Expression Expression;
 
 typedef enum {
     ASSIGNMENT,
-    IDENTIFIER
+    IDENTIFIER,
+    INTEGER_EXPRESSION,
 } ExpressionType;
 
 typedef enum {
     LET_DECLARATION,
     CONST_DECLARATION
 } LexicalDeclarationType;
+
+typedef enum {
+    EXPRESSION_STATEMENT,
+    DECLARATION_STATEMENT
+} StatementType;
 
 /**
  * Node types for the Abstract Syntax Tree (AST).
@@ -61,8 +67,8 @@ struct LexicalDeclaration {
 };
 
 struct Statement {
-    // Placeholder for different types of statements
-    int type;
+    StatementType type;
+    Expression * expression;
 };
 
 struct StatementList {
@@ -76,6 +82,7 @@ struct StatementListItem {
         Statement * statement;
     };
     StatementListItem * next;
+    StatementType type;
 };
 
 struct VariableDeclarator {
