@@ -44,8 +44,22 @@
 <STRING_DOUBLE_QUOTE>\\\\           { EscapedCharOrNewlineLexemeAction(createLexicalAnalyzerContext()); }
 <STRING_DOUBLE_QUOTE>\\(.|\n)       { EscapedCharOrNewlineLexemeAction(createLexicalAnalyzerContext()); }
 <STRING_DOUBLE_QUOTE>[^\\\n\"]+     { StringLiteralLexemeAction(createLexicalAnalyzerContext()); }
-<STRING_DOUBLE_QUOTE>\n             { UnterminatedStringDoubleQuoteLexemeAction(createLexicalAnalyzerContext()); }
-<STRING_DOUBLE_QUOTE><<EOF>>        { UnterminatedStringDoubleQuoteLexemeAction(createLexicalAnalyzerContext()); }
+<STRING_DOUBLE_QUOTE>\n             { UnterminatedStringLiteralLexemeAction(createLexicalAnalyzerContext()); }
+<STRING_DOUBLE_QUOTE><<EOF>>        { UnterminatedStringLiteralLexemeAction(createLexicalAnalyzerContext()); }
+
+ "'"                                 { BEGIN(STRING_SINGLE_QUOTE); BeginSingleQuoteLexemeAction(createLexicalAnalyzerContext()); }
+ <STRING_SINGLE_QUOTE>\'             { Token t = EndSingleQuoteLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); return t; }
+ <STRING_SINGLE_QUOTE>\\n            { EscapedCharOrNewlineLexemeAction(createLexicalAnalyzerContext()); }
+ <STRING_SINGLE_QUOTE>\\t            { EscapedCharOrNewlineLexemeAction(createLexicalAnalyzerContext()); }
+ <STRING_SINGLE_QUOTE>\\r            { EscapedCharOrNewlineLexemeAction(createLexicalAnalyzerContext()); }
+ <STRING_SINGLE_QUOTE>\\b            { EscapedCharOrNewlineLexemeAction(createLexicalAnalyzerContext()); }
+ <STRING_SINGLE_QUOTE>\\f            { EscapedCharOrNewlineLexemeAction(createLexicalAnalyzerContext()); }
+ <STRING_SINGLE_QUOTE>\\'            { EscapedCharOrNewlineLexemeAction(createLexicalAnalyzerContext()); }
+ <STRING_SINGLE_QUOTE>\\\\           { EscapedCharOrNewlineLexemeAction(createLexicalAnalyzerContext()); }
+ <STRING_SINGLE_QUOTE>\\(.|\n)       { EscapedCharOrNewlineLexemeAction(createLexicalAnalyzerContext()); }
+ <STRING_SINGLE_QUOTE>[^\\\n\']+     { StringLiteralLexemeAction(createLexicalAnalyzerContext()); }
+ <STRING_SINGLE_QUOTE>\n             { UnterminatedStringLiteralLexemeAction(createLexicalAnalyzerContext()); }
+ <STRING_SINGLE_QUOTE><<EOF>>        { UnterminatedStringLiteralLexemeAction(createLexicalAnalyzerContext()); }
 
 "const"                             { return KeywordLexemeAction(createLexicalAnalyzerContext(), CONST_KEYWORD); }
 "let"                               { return KeywordLexemeAction(createLexicalAnalyzerContext(), LET_KEYWORD); }

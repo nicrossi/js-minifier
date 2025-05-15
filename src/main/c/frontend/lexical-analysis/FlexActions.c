@@ -102,6 +102,14 @@ void BeginDoubleQuoteLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContex
     _stringBuffer.length = 0; // If buffer NULL or too small, it will be reallocated
 }
 
+void BeginSingleQuoteLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+    if (_logIgnoredLexemes) {
+        _logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+    }
+    destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+    _stringBuffer.length = 0; // If buffer NULL or too small, it will be reallocated
+}
+
 Token EndDoubleQuoteLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
     if (_logIgnoredLexemes) {
         _logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
@@ -114,6 +122,22 @@ Token EndDoubleQuoteLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext
         exit(EXIT_FAILURE);
     }
     destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+    return STRING_LITERAL;
+}
+
+Token EndSingleQuoteLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+    if (_logIgnoredLexemes) {
+        _logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+    }
+    appendCharToBuffer('\0'); // Null-terminate the accumulated string
+    lexicalAnalyzerContext->semanticValue->string = strdup(_stringBuffer.buffer);
+    clearStringBuffer();
+    if (lexicalAnalyzerContext->semanticValue->string == NULL) {
+        logError(_logger, "Memory allocation failed for string");
+        exit(EXIT_FAILURE);
+    }
+    destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
+    // For now both single and double quotes are treated the same.
     return STRING_LITERAL;
 }
 
@@ -134,7 +158,7 @@ void EscapedCharOrNewlineLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerCo
 }
 
 void StringLiteralLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-    // Handle any other character that is not a backslash, double quote, or newline
+    // Handle any other character that is not a backslash, double/single quote (depending on the case), or newline
     // JavaScript double-quoted strings do NOT allow raw newlines; they must be escaped.
     if (_logIgnoredLexemes) {
         _logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
@@ -184,11 +208,11 @@ Token UnknownLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	return UNKNOWN;
 }
 
-void UnterminatedStringDoubleQuoteLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+void UnterminatedStringLiteralLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
     if (_logIgnoredLexemes) {
         _logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
     }
-    logError(_logger, "Unterminated string (missing closing double quote)");
+    logError(_logger, "Unterminated string (missing closing quote)");
     clearStringBuffer();
     destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
     exit(EXIT_FAILURE);

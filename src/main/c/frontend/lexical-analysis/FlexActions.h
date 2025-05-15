@@ -22,8 +22,10 @@ void shutdownFlexActionsModule();
  */
 
 void BeginDoubleQuoteLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+void BeginSingleQuoteLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 void BeginMultilineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 Token EndDoubleQuoteLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token EndSingleQuoteLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 void EndMultilineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 void EscapedCharOrNewlineLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 void StringLiteralLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
@@ -33,5 +35,5 @@ Token IntegerLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 Token KeywordLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
 Token PunctuationLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
 Token UnknownLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-void UnterminatedStringDoubleQuoteLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+void UnterminatedStringLiteralLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 #endif
