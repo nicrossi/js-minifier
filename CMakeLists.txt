@@ -8,7 +8,7 @@ project(Compiler C)
 # Compiles the parser with Bison, generating counter-examples in case S/R or R/R conflicts exists.
 add_custom_command(
 	OUTPUT ../src/main/c/frontend/syntactic-analysis/BisonParser.c ../src/main/c/frontend/syntactic-analysis/BisonParser.h
-	COMMAND bison -Wcounterexamples -d ../src/main/c/frontend/syntactic-analysis/BisonGrammar.y --output=../src/main/c/frontend/syntactic-analysis/BisonParser.c)
+	COMMAND bison -v -Wcounterexamples -d ../src/main/c/frontend/syntactic-analysis/BisonGrammar.y --output=../src/main/c/frontend/syntactic-analysis/BisonParser.c)
 
 # Selects the best strategy according to the available compiler in the system.
 # @see https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_COMPILER_ID.html

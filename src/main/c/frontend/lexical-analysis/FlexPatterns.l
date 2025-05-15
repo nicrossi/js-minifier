@@ -17,6 +17,7 @@
 %x MULTILINE_COMMENT
 %x STRING_DOUBLE_QUOTE
 %x STRING_SINGLE_QUOTE
+%x SINGLE_LINE_COMMENT
 
 /**
  * Reusable patterns.
@@ -32,6 +33,10 @@
 <MULTILINE_COMMENT>[[:space:]]+		{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 <MULTILINE_COMMENT>[^*]+			{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 <MULTILINE_COMMENT>.				{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+
+"//"                                { BEGIN(SINGLE_LINE_COMMENT); IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+<SINGLE_LINE_COMMENT>\n             { BEGIN(INITIAL); IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+<SINGLE_LINE_COMMENT>.              { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 
 "\""                                { BEGIN(STRING_DOUBLE_QUOTE); BeginDoubleQuoteLexemeAction(createLexicalAnalyzerContext()); }
 <STRING_DOUBLE_QUOTE>\"             { Token t = EndDoubleQuoteLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); return t; }

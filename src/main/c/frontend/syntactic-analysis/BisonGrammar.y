@@ -89,6 +89,7 @@
 %precedence CLOSE_CURLY_BRACE // avoid conflicts with empty block
 %precedence IF_KEYWORD
 %precedence ELSE_KEYWORD
+%precedence IDENTIFIER_NAME
 
 // Dangling else, and empty statements. Default behavior is good enough.
 %expect 2

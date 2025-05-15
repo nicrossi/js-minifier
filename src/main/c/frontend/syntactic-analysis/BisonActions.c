@@ -22,6 +22,7 @@ extern unsigned int flexCurrentContext(void);
 /* PRIVATE FUNCTIONS */
 
 static void _logSyntacticAnalyzerAction(const char * functionName);
+void checkInitializer(VariableDeclaratorList * list);
 
 /**
  * Logs a syntactic-analyzer action in DEBUGGING level.
@@ -162,6 +163,9 @@ Expression * IntegerExpressionSemanticAction(const int value) {
 
 LexicalDeclaration * CreateLexicalDeclarationSemanticAction(LexicalDeclarationType type, VariableDeclaratorList * variableDeclaratorList) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
+    if (type == CONST_DECLARATION) {
+        checkInitializer(variableDeclaratorList);
+    }
     LexicalDeclaration * lexicalDeclaration = ecalloc(1, sizeof(LexicalDeclaration));
     lexicalDeclaration->type = type;
     lexicalDeclaration->declaratorList = variableDeclaratorList;
@@ -237,3 +241,14 @@ VariableDeclarator * VariableDeclaratorSemanticAction(const char * identifier, E
     free((char *) identifier);
     return declarator;
 }
+
+void checkInitializer(VariableDeclaratorList * list) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    for (VariableDeclarator  * vd = list->head; vd != NULL; vd = vd->next) {
+        if (vd->initializer == NULL) {
+            logError(_logger, "Variable \"%s\" is declared without an initializer.", vd->identifier);
+            exit(EXIT_FAILURE);
+        }
+    }
+}
+
