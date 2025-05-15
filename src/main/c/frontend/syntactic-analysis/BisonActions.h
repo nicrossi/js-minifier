@@ -20,12 +20,18 @@ void shutdownBisonActionsModule();
  */
 VariableDeclaratorList * AppendVariableDeclaratorListSemanticAction(VariableDeclaratorList * list, VariableDeclarator * variableDeclarator);
 Expression * AssignmentExpressionSemanticAction(VariableDeclarator * variableDeclarator);
+StatementList * BlockSemanticAction(StatementList * statementList);
+Statement * BlockStatementSemanticAction(StatementList * statementList);
 Expression * ChainedAssignmentSemanticAction(Expression * left, Expression * right);
 Expression * CommaExpressionSemanticAction(Expression * expression, Expression * assignmentExpression);
 StatementListItem * DeclarationStatementListItemSemanticAction(Declaration * declaration);
+StatementList * EmptyBlockSemanticAction();
 StatementList * EmptyStatementListSemanticAction();
+Expression * EqualityExpressionSemanticAction(Expression * left, Expression * right);
 Statement * ExpressionStatementSemanticAction(Expression * expression);
 Expression * IdentifierExpressionSemanticAction(const char * identifier);
+IfStatement * IfSemanticAction(Expression * condition, Statement * thenStatement, Statement * elseStatement);
+Statement * IfStatementSemanticAction(IfStatement * ifStatement);
 Expression * IntegerExpressionSemanticAction(int value);
 LexicalDeclaration * CreateLexicalDeclarationSemanticAction(LexicalDeclarationType type, VariableDeclaratorList * variableDeclaratorList);
 Declaration * LexicalDeclarationSemanticAction(LexicalDeclaration * lexicalConst);

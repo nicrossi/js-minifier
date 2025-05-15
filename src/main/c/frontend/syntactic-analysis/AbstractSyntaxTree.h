@@ -28,6 +28,7 @@ typedef enum {
     ASSIGNMENT,
     IDENTIFIER,
     INTEGER_EXPRESSION,
+    BOOLEAN_EXPRESSION,
 } ExpressionType;
 
 typedef enum {
@@ -37,7 +38,9 @@ typedef enum {
 
 typedef enum {
     EXPRESSION_STATEMENT,
-    DECLARATION_STATEMENT
+    DECLARATION_STATEMENT,
+    IF_STATEMENT,
+    BLOCK_STATEMENT,
 } StatementType;
 
 /**
@@ -61,6 +64,12 @@ struct Expression {
     };
 };
 
+typedef struct {
+    Expression * condition;
+    Statement * thenStatement;
+    Statement * elseStatement;
+} IfStatement;
+
 struct LexicalDeclaration {
     LexicalDeclarationType type;
     VariableDeclaratorList * declaratorList;
@@ -68,7 +77,11 @@ struct LexicalDeclaration {
 
 struct Statement {
     StatementType type;
-    Expression * expression;
+    union {
+        Expression * expression;
+        StatementList * block;
+        IfStatement * ifStatement;
+    };
 };
 
 struct StatementList {
@@ -105,6 +118,7 @@ struct Program {
  */
 void releaseDeclaration(Declaration * declaration);
 void releaseExpression(Expression * expression);
+void releaseIfStatement(IfStatement * ifStatement);
 void releaseLexicalDeclaration(LexicalDeclaration * lexicalConst);
 void releaseProgram(Program * program);
 void releaseStatement(Statement * statement);

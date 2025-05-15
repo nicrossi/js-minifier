@@ -54,6 +54,19 @@ Expression * AssignmentExpressionSemanticAction(VariableDeclarator * variableDec
     return expression;
 }
 
+StatementList * BlockSemanticAction(StatementList * statementList) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    return statementList;
+}
+
+Statement * BlockStatementSemanticAction(StatementList * statementList) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Statement * statement = ecalloc(1, sizeof(Statement));
+    statement->type = BLOCK_STATEMENT;
+    statement->block = statementList;
+    return statement;
+}
+
 Expression * ChainedAssignmentSemanticAction(Expression * left, Expression * right) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     Expression * expression = ecalloc(1, sizeof(Expression));
@@ -82,11 +95,27 @@ StatementListItem * DeclarationStatementListItemSemanticAction(Declaration * dec
     return item;
 }
 
+StatementList * EmptyBlockSemanticAction() {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    StatementList * statementList = ecalloc(1, sizeof(StatementList));
+    statementList->head = statementList->tail = NULL;
+    return statementList;
+}
+
 StatementList * EmptyStatementListSemanticAction() {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     StatementList * statementList = ecalloc(1, sizeof(StatementList));
     statementList->head = statementList->tail = NULL;
     return statementList;
+}
+
+Expression * EqualityExpressionSemanticAction(Expression * left, Expression * right) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Expression * expression = ecalloc(1, sizeof(Expression));
+    expression->type = BOOLEAN_EXPRESSION;
+    expression->binaryExpression.leftExpression = left;
+    expression->binaryExpression.rightExpression = right;
+    return expression;
 }
 
 Statement * ExpressionStatementSemanticAction(Expression * expression) {
@@ -104,6 +133,23 @@ Expression * IdentifierExpressionSemanticAction(const char * identifier) {
     expression->identifierName = strdup(identifier);
     free((char *) identifier);
     return expression;
+}
+
+IfStatement * IfSemanticAction(Expression * condition, Statement * thenStatement, Statement * elseStatement) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    IfStatement * ifStatement = ecalloc(1, sizeof(IfStatement));
+    ifStatement->condition = condition;
+    ifStatement->thenStatement = thenStatement;
+    ifStatement->elseStatement = elseStatement;
+    return ifStatement;
+}
+
+Statement * IfStatementSemanticAction(IfStatement * ifStatement) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Statement * statement = ecalloc(1, sizeof(Statement));
+    statement->type = IF_STATEMENT;
+    statement->ifStatement = ifStatement;
+    return statement;
 }
 
 Expression * IntegerExpressionSemanticAction(const int value) {

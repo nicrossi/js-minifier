@@ -33,9 +33,17 @@
 
 "const"                             { return KeywordLexemeAction(createLexicalAnalyzerContext(), CONST_KEYWORD); }
 "let"                               { return KeywordLexemeAction(createLexicalAnalyzerContext(), LET_KEYWORD); }
+"if"                                { return KeywordLexemeAction(createLexicalAnalyzerContext(), IF_KEYWORD); }
+"else"                              { return KeywordLexemeAction(createLexicalAnalyzerContext(), ELSE_KEYWORD); }
+
 "="                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), EQUAL); }
+"=="                                { return PunctuationLexemeAction(createLexicalAnalyzerContext(), EQUALITY); }
 ";"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), SEMICOLON); }
 ","                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), COMMA); }
+"("                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), OPEN_PARENTHESIS); }
+")"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), CLOSE_PARENTHESIS); }
+"{"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), OPEN_CURLY_BRACE); }
+"}"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), CLOSE_CURLY_BRACE); }
 
 [a-zA-Z_\\$][a-zA-Z0-9_\\$]*        { return IdentifierNameLexemeAction(createLexicalAnalyzerContext()); }
 

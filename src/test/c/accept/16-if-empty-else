@@ -1,0 +1,6 @@
+if (a == 1) {
+    const a = 1;
+    const foo = a;
+} else {
+
+}

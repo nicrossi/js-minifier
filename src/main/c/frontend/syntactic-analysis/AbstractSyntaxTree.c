@@ -30,6 +30,7 @@ void releaseExpression(Expression * expression) {
         // TODO: Add specific cleanup logic for different expression types
         switch(expression->type) {
             case ASSIGNMENT:
+            case BOOLEAN_EXPRESSION:
                 releaseExpression(expression->binaryExpression.leftExpression);
                 releaseExpression(expression->binaryExpression.rightExpression);
                 break;
@@ -41,6 +42,17 @@ void releaseExpression(Expression * expression) {
         }
         free(expression);
         expression = NULL;
+    }
+}
+
+void releaseIfStatement(IfStatement * ifStatement) {
+    logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (ifStatement != NULL) {
+        releaseExpression(ifStatement->condition);
+        releaseStatement(ifStatement->thenStatement);
+        releaseStatement(ifStatement->elseStatement);
+        free(ifStatement);
+        ifStatement = NULL;
     }
 }
 
@@ -58,9 +70,9 @@ void releaseStatement(Statement * statement) {
     if (statement != NULL) {
         // TODO: Add specific cleanup logic for different statement types
         switch(statement->type) {
-            case EXPRESSION_STATEMENT:
-                releaseExpression(statement->expression);
-                break;
+            case EXPRESSION_STATEMENT: releaseExpression(statement->expression); break;
+            case IF_STATEMENT:         releaseIfStatement(statement->ifStatement); break;
+            case BLOCK_STATEMENT:      releaseStatementList(statement->block); break;
             default:
                 logWarning(_logger, "Unknown statement type: %d", statement->type);
         }
