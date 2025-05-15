@@ -21,14 +21,17 @@ void shutdownFlexActionsModule();
  * Flex lexeme processing actions.
  */
 
+void BeginDoubleQuoteLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 void BeginMultilineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token EndDoubleQuoteLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 void EndMultilineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+void EscapedCharOrNewlineLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+void StringLiteralLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 void IgnoredLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-
 Token IdentifierNameLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 Token IntegerLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 Token KeywordLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
 Token PunctuationLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
 Token UnknownLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-
+void UnterminatedStringDoubleQuoteLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 #endif

@@ -15,6 +15,8 @@
  * @see https://westes.github.io/flex/manual/Start-Conditions.html
  */
 %x MULTILINE_COMMENT
+%x STRING_DOUBLE_QUOTE
+%x STRING_SINGLE_QUOTE
 
 /**
  * Reusable patterns.
@@ -30,6 +32,20 @@
 <MULTILINE_COMMENT>[[:space:]]+		{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 <MULTILINE_COMMENT>[^*]+			{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 <MULTILINE_COMMENT>.				{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+
+"\""                                { BEGIN(STRING_DOUBLE_QUOTE); BeginDoubleQuoteLexemeAction(createLexicalAnalyzerContext()); }
+<STRING_DOUBLE_QUOTE>\"             { Token t = EndDoubleQuoteLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); return t; }
+<STRING_DOUBLE_QUOTE>\\n            { EscapedCharOrNewlineLexemeAction(createLexicalAnalyzerContext()); }
+<STRING_DOUBLE_QUOTE>\\t            { EscapedCharOrNewlineLexemeAction(createLexicalAnalyzerContext()); }
+<STRING_DOUBLE_QUOTE>\\r            { EscapedCharOrNewlineLexemeAction(createLexicalAnalyzerContext()); }
+<STRING_DOUBLE_QUOTE>\\b            { EscapedCharOrNewlineLexemeAction(createLexicalAnalyzerContext()); }
+<STRING_DOUBLE_QUOTE>\\f            { EscapedCharOrNewlineLexemeAction(createLexicalAnalyzerContext()); }
+<STRING_DOUBLE_QUOTE>\\\"           { EscapedCharOrNewlineLexemeAction(createLexicalAnalyzerContext()); }
+<STRING_DOUBLE_QUOTE>\\\\           { EscapedCharOrNewlineLexemeAction(createLexicalAnalyzerContext()); }
+<STRING_DOUBLE_QUOTE>\\(.|\n)       { EscapedCharOrNewlineLexemeAction(createLexicalAnalyzerContext()); }
+<STRING_DOUBLE_QUOTE>[^\\\n\"]+     { StringLiteralLexemeAction(createLexicalAnalyzerContext()); }
+<STRING_DOUBLE_QUOTE>\n             { UnterminatedStringDoubleQuoteLexemeAction(createLexicalAnalyzerContext()); }
+<STRING_DOUBLE_QUOTE><<EOF>>        { UnterminatedStringDoubleQuoteLexemeAction(createLexicalAnalyzerContext()); }
 
 "const"                             { return KeywordLexemeAction(createLexicalAnalyzerContext(), CONST_KEYWORD); }
 "let"                               { return KeywordLexemeAction(createLexicalAnalyzerContext(), LET_KEYWORD); }

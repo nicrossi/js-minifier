@@ -212,6 +212,15 @@ StatementListItem * StatementStatementListItemSemanticAction(Statement * stateme
     return item;
 }
 
+Expression * StringExpressionSemanticAction(const char * s) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Expression * expression = ecalloc(1, sizeof(Expression));
+    expression->type = STRING_LITERAL_EXPRESSION;
+    expression->string = strdup(s);
+    free((char *) s);
+    return expression;
+}
+
 VariableDeclaratorList * VariableDeclaratorListSemanticAction(VariableDeclarator * variableDeclarator) {
     _logSyntacticAnalyzerAction(__FUNCTION__ );
     VariableDeclaratorList * variableDeclaratorList = ecalloc(1, sizeof(VariableDeclaratorList));

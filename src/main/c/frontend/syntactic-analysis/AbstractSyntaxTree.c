@@ -34,9 +34,8 @@ void releaseExpression(Expression * expression) {
                 releaseExpression(expression->binaryExpression.leftExpression);
                 releaseExpression(expression->binaryExpression.rightExpression);
                 break;
-            case IDENTIFIER:
-                free(expression->identifierName);
-                break;
+            case IDENTIFIER: free(expression->identifierName); break;
+            case STRING_LITERAL_EXPRESSION: free(expression->string); break;
             default:
                 logWarning(_logger, "Unknown expression type: %d", expression->type);
         }

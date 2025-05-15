@@ -38,6 +38,7 @@ Declaration * LexicalDeclarationSemanticAction(LexicalDeclaration * lexicalConst
 Program * StatementListProgramSemanticAction(CompilerState * compilerState, StatementList * statementList);
 StatementList * StatementListSemanticAction(StatementList * statementList, StatementListItem * statementListItem);
 StatementListItem * StatementStatementListItemSemanticAction(Statement * statement);
+Expression * StringExpressionSemanticAction(const char * s);
 VariableDeclaratorList * VariableDeclaratorListSemanticAction(VariableDeclarator * variableDeclarator);
 VariableDeclarator * VariableDeclaratorSemanticAction(const char * identifier, Expression * initializer);
 #endif

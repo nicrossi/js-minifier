@@ -29,6 +29,7 @@ typedef enum {
     IDENTIFIER,
     INTEGER_EXPRESSION,
     BOOLEAN_EXPRESSION,
+    STRING_LITERAL_EXPRESSION,
 } ExpressionType;
 
 typedef enum {
@@ -60,6 +61,7 @@ struct Expression {
     union {
         BinaryExpression binaryExpression;
         char * identifierName;
+        char * string;
         int value;
     };
 };

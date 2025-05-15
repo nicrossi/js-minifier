@@ -48,6 +48,7 @@
 %token <integer> INTEGER
 
 %token <string> IDENTIFIER_NAME
+%token <string> STRING_LITERAL
 
 %token <token> CLOSE_CURLY_BRACE
 %token <token> CLOSE_PARENTHESIS
@@ -120,6 +121,7 @@ lexicalDeclaration:
     ;
 assignmentExpression: INTEGER                                       { $$ = IntegerExpressionSemanticAction($1); }
     | IDENTIFIER_NAME                                               { $$ = IdentifierExpressionSemanticAction($1); }
+    | STRING_LITERAL                                                { $$ = StringExpressionSemanticAction($1); }
     ;
 optionalSemicolon: SEMICOLON
     | %empty
