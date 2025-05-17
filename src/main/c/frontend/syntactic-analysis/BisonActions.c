@@ -41,17 +41,12 @@ VariableDeclaratorList * AppendVariableDeclaratorListSemanticAction(VariableDecl
     return list;
 }
 
-Expression * AssignmentExpressionSemanticAction(VariableDeclarator * variableDeclarator) {
+Expression * AssignmentExpressionSemanticAction(Expression * left, Expression * right) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     Expression * expression = ecalloc(1, sizeof(Expression));
     expression->type = ASSIGNMENT;
-    expression->binaryExpression.leftExpression = ecalloc(1, sizeof(Expression));
-    expression->binaryExpression.leftExpression->type = IDENTIFIER;
-    expression->binaryExpression.leftExpression->identifierName = strdup(variableDeclarator->identifier);
-    expression->binaryExpression.rightExpression = variableDeclarator->initializer;
-    free(variableDeclarator->identifier);
-    free(variableDeclarator);
-    variableDeclarator = NULL;
+    expression->binaryExpression.leftExpression = left;
+    expression->binaryExpression.rightExpression = right;
     return expression;
 }
 

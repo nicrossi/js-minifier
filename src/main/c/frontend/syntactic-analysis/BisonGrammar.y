@@ -69,10 +69,14 @@
 %type <statementList> block
 %type <declaration> declaration
 %type <expression> expression
+%type <expression> equalityExpression
 %type <ifStatement> ifStatement
+%type <expression> leftHandSideExpression
 %type <lexicalDeclaration> lexicalDeclaration
+%type <expression> primaryExpression
 %type <program> program
 %type <statement> statement
+%type <expression> statementExpression
 %type <statementList> statementList
 %type <statementListItem> statementListItem
 %type <variableDeclarator> variableDeclarator
@@ -105,10 +109,8 @@ statementListItem: declaration                                      { $$ = Decla
     ;
 declaration: lexicalDeclaration                                     { $$ = LexicalDeclarationSemanticAction($1); }
     ;
-expression: variableDeclarator                                      { $$ = AssignmentExpressionSemanticAction($1); }
-    | expression COMMA assignmentExpression                         { $$ = CommaExpressionSemanticAction($1, $3); }
-    | expression EQUAL assignmentExpression                         { $$ = ChainedAssignmentSemanticAction($1, $3); }
-    | assignmentExpression EQUALITY assignmentExpression            { $$ = EqualityExpressionSemanticAction($1, $3); }
+expression: expression COMMA assignmentExpression                   { $$ = CommaExpressionSemanticAction($1, $3); }
+      | assignmentExpression
     ;
 variableDeclarator:
     IDENTIFIER_NAME EQUAL assignmentExpression                      { $$ = VariableDeclaratorSemanticAction($1, $3); }
@@ -120,9 +122,23 @@ lexicalDeclaration:
     CONST_KEYWORD variableDeclaratorList optionalSemicolon          { $$ = CreateLexicalDeclarationSemanticAction(CONST_DECLARATION, $2); }
     | LET_KEYWORD variableDeclaratorList optionalSemicolon          { $$ = CreateLexicalDeclarationSemanticAction(LET_DECLARATION, $2); }
     ;
-assignmentExpression: INTEGER                                       { $$ = IntegerExpressionSemanticAction($1); }
+// primaryExpression: The most basic building blocks that evaluate to a value
+primaryExpression: INTEGER                                          { $$ = IntegerExpressionSemanticAction($1); }
     | IDENTIFIER_NAME                                               { $$ = IdentifierExpressionSemanticAction($1); }
     | STRING_LITERAL                                                { $$ = StringExpressionSemanticAction($1); }
+    ;
+leftHandSideExpression: IDENTIFIER_NAME                             { $$ = IdentifierExpressionSemanticAction($1); }
+    ;
+equalityExpression: equalityExpression EQUALITY primaryExpression   { $$ = EqualityExpressionSemanticAction($1, $3); }
+    | primaryExpression
+    ;
+assignmentExpression:
+    leftHandSideExpression EQUAL assignmentExpression               { $$ = AssignmentExpressionSemanticAction($1, $3); }
+    | equalityExpression
+    ;
+// Restricted version of the assignment expression
+statementExpression:
+    leftHandSideExpression EQUAL assignmentExpression { $$ = AssignmentExpressionSemanticAction($1, $3); }
     ;
 optionalSemicolon: SEMICOLON
     | %empty
@@ -135,7 +151,7 @@ block:
     OPEN_CURLY_BRACE statementList CLOSE_CURLY_BRACE               { $$ = BlockSemanticAction($2); }
     | OPEN_CURLY_BRACE CLOSE_CURLY_BRACE                           { $$ = EmptyBlockSemanticAction(); }
     ;
-statement: expression optionalSemicolon                            { $$ = ExpressionStatementSemanticAction($1); }
+statement: statementExpression optionalSemicolon                   { $$ = ExpressionStatementSemanticAction($1); }
     | ifStatement                                                  { $$ = IfStatementSemanticAction($1); }
     | block                                                        { $$ = BlockStatementSemanticAction($1); }
     ;

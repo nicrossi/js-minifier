@@ -19,7 +19,7 @@ void shutdownBisonActionsModule();
  * Bison semantic actions.
  */
 VariableDeclaratorList * AppendVariableDeclaratorListSemanticAction(VariableDeclaratorList * list, VariableDeclarator * variableDeclarator);
-Expression * AssignmentExpressionSemanticAction(VariableDeclarator * variableDeclarator);
+Expression * AssignmentExpressionSemanticAction(Expression * left, Expression * right);
 StatementList * BlockSemanticAction(StatementList * statementList);
 Statement * BlockStatementSemanticAction(StatementList * statementList);
 Expression * ChainedAssignmentSemanticAction(Expression * left, Expression * right);
