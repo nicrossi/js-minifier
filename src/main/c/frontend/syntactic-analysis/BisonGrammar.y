@@ -114,6 +114,7 @@ expression: expression COMMA assignmentExpression                   { $$ = Comma
     ;
 variableDeclarator:
     IDENTIFIER_NAME EQUAL assignmentExpression                      { $$ = VariableDeclaratorSemanticAction($1, $3); }
+    | IDENTIFIER_NAME                                               { $$ = VariableDeclaratorSemanticAction($1, NULL); }
     ;
 variableDeclaratorList: variableDeclarator                          { $$ = VariableDeclaratorListSemanticAction($1); }
     | variableDeclaratorList COMMA variableDeclarator               { $$ = AppendVariableDeclaratorListSemanticAction($1, $3); }
