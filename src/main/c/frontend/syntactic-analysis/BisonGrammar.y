@@ -16,6 +16,8 @@
 	/** Non-terminals. */
 	Declaration * declaration;
 	Expression * expression;
+	ForInitializer * forStatementInit;
+	ForStatement * forStatement;
 	IfStatement * ifStatement;
 	LexicalDeclaration * lexicalDeclaration;
 	Program * program;
@@ -36,6 +38,9 @@
  */
 %destructor { releaseDeclaration($$); } <declaration>
 %destructor { releaseExpression($$); } <expression>
+%destructor { releaseForInitializer($$); } <forStatementInit>
+%destructor { releaseForStatement($$); } <forStatement>
+%destructor { releaseIfStatement($$); } <ifStatement>
 %destructor { releaseLexicalDeclaration($$); } <lexicalDeclaration>
 %destructor { releaseStatement($$); } <statement>
 %destructor { releaseStatementList($$); } <statementList>
@@ -43,7 +48,6 @@
 %destructor { releaseString($$); } <string>
 %destructor { releaseVariableDeclarator($$); } <variableDeclarator>
 %destructor { releaseVariableDeclaratorList($$); } <variableDeclaratorList>
-%destructor { releaseIfStatement($$); } <ifStatement>
 /** Terminals. */
 %token <integer> INTEGER
 
@@ -57,6 +61,7 @@
 %token <token> ELSE_KEYWORD
 %token <token> EQUAL
 %token <token> EQUALITY
+%token <token> FOR_KEYWORD
 %token <token> IF_KEYWORD
 %token <token> LET_KEYWORD
 %token <token> OPEN_CURLY_BRACE
@@ -70,9 +75,13 @@
 %type <declaration> declaration
 %type <expression> expression
 %type <expression> equalityExpression
+%type <forStatementInit> forStatementInit
+%type <forStatement> forStatement
+%type <lexicalDeclaration> forLexicalDeclaration
 %type <ifStatement> ifStatement
 %type <expression> leftHandSideExpression
 %type <lexicalDeclaration> lexicalDeclaration
+%type <expression> optionalExpression
 %type <expression> primaryExpression
 %type <program> program
 %type <statement> statement
@@ -144,16 +153,31 @@ statementExpression:
 optionalSemicolon: SEMICOLON
     | %empty
     ;
+optionalExpression: %empty                                         { $$ = EmptyExpressionSemanticAction(); }
+    | expression
+    ;
 ifStatement:
     IF_KEYWORD OPEN_PARENTHESIS expression CLOSE_PARENTHESIS statement %prec ELSE_KEYWORD { $$ = IfSemanticAction($3, $5, NULL); }
     | IF_KEYWORD OPEN_PARENTHESIS expression CLOSE_PARENTHESIS statement ELSE_KEYWORD statement { $$ = IfSemanticAction($3, $5, $7); }
+    ;
+forStatement
+   : FOR_KEYWORD OPEN_PARENTHESIS forStatementInit SEMICOLON optionalExpression SEMICOLON optionalExpression CLOSE_PARENTHESIS statement
+      { $$ = ForIterationSemanticAction($3, $5, $7, $9);}
+   ;
+forStatementInit: %empty                                          { $$ = EmptyForInitSemanticAction(); }
+    | expression                                                  { $$ = ExpressionForInitSemanticAction($1); }
+    | forLexicalDeclaration                                       { $$ = LexicalDeclarationForInitSemanticAction($1); }
+    ;
+forLexicalDeclaration: CONST_KEYWORD variableDeclaratorList { $$ = CreateLexicalDeclarationSemanticAction(CONST_DECLARATION, $2); }
+    | LET_KEYWORD variableDeclaratorList                    { $$ = CreateLexicalDeclarationSemanticAction(LET_DECLARATION, $2); }
     ;
 block:
     OPEN_CURLY_BRACE statementList CLOSE_CURLY_BRACE               { $$ = BlockSemanticAction($2); }
     | OPEN_CURLY_BRACE CLOSE_CURLY_BRACE                           { $$ = EmptyBlockSemanticAction(); }
     ;
-statement: statementExpression optionalSemicolon                   { $$ = ExpressionStatementSemanticAction($1); }
-    | ifStatement                                                  { $$ = IfStatementSemanticAction($1); }
-    | block                                                        { $$ = BlockStatementSemanticAction($1); }
+statement: block                                              { $$ = BlockStatementSemanticAction($1); }
+    | statementExpression optionalSemicolon                   { $$ = ExpressionStatementSemanticAction($1); }
+    | ifStatement                                             { $$ = IfStatementSemanticAction($1); }
+    | forStatement                                            { $$ = ForStatementSemanticAction($1); }
     ;
 %%

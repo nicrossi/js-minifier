@@ -26,9 +26,10 @@ typedef struct Expression Expression;
 
 typedef enum {
     ASSIGNMENT,
+    BOOLEAN_EXPRESSION,
+    EMPTY_EXPRESSION,
     IDENTIFIER,
     INTEGER_EXPRESSION,
-    BOOLEAN_EXPRESSION,
     STRING_LITERAL_EXPRESSION,
 } ExpressionType;
 
@@ -38,10 +39,17 @@ typedef enum {
 } LexicalDeclarationType;
 
 typedef enum {
+    EMPTY_FOR_INIT,
+    EXPRESSION_FOR_INIT,
+    LEXICAL_DECLARATION_FOR_INIT
+} ForInitializerType;
+
+typedef enum {
     EXPRESSION_STATEMENT,
     DECLARATION_STATEMENT,
     IF_STATEMENT,
     BLOCK_STATEMENT,
+    FOR_STATEMENT,
 } StatementType;
 
 /**
@@ -67,6 +75,21 @@ struct Expression {
 };
 
 typedef struct {
+    ForInitializerType type;
+    union {
+        Expression * expression;
+        LexicalDeclaration * lexicalDeclaration;
+    };
+} ForInitializer;
+
+typedef struct {
+    ForInitializer * initializer;
+    Expression * condition;
+    Expression * increment;
+    Statement * body;
+} ForStatement;
+
+typedef struct {
     Expression * condition;
     Statement * thenStatement;
     Statement * elseStatement;
@@ -83,6 +106,7 @@ struct Statement {
         Expression * expression;
         StatementList * block;
         IfStatement * ifStatement;
+        ForStatement * forStatement;
     };
 };
 
@@ -120,6 +144,8 @@ struct Program {
  */
 void releaseDeclaration(Declaration * declaration);
 void releaseExpression(Expression * expression);
+void releaseForInitializer(ForInitializer * forInitializer);
+void releaseForStatement(ForStatement * forStatement);
 void releaseIfStatement(IfStatement * ifStatement);
 void releaseLexicalDeclaration(LexicalDeclaration * lexicalConst);
 void releaseProgram(Program * program);

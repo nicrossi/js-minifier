@@ -44,6 +44,31 @@ void releaseExpression(Expression * expression) {
     }
 }
 
+void releaseForInitializer(ForInitializer * forInitializer) {
+    logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (forInitializer != NULL) {
+        if (forInitializer->type == LEXICAL_DECLARATION_FOR_INIT) {
+            releaseLexicalDeclaration(forInitializer->lexicalDeclaration);
+        } else if (forInitializer->type == EXPRESSION_FOR_INIT) {
+            releaseExpression(forInitializer->expression);
+        }
+        free(forInitializer);
+        forInitializer = NULL;
+    }
+}
+
+void releaseForStatement(ForStatement * forStatement) {
+    logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (forStatement != NULL) {
+        releaseExpression(forStatement->condition);
+        releaseExpression(forStatement->increment);
+        releaseStatement(forStatement->body);
+        releaseForInitializer(forStatement->initializer);
+        free(forStatement);
+        forStatement = NULL;
+    }
+}
+
 void releaseIfStatement(IfStatement * ifStatement) {
     logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
     if (ifStatement != NULL) {
@@ -72,6 +97,7 @@ void releaseStatement(Statement * statement) {
             case EXPRESSION_STATEMENT: releaseExpression(statement->expression); break;
             case IF_STATEMENT:         releaseIfStatement(statement->ifStatement); break;
             case BLOCK_STATEMENT:      releaseStatementList(statement->block); break;
+            case FOR_STATEMENT:        releaseForStatement(statement->forStatement); break;
             default:
                 logWarning(_logger, "Unknown statement type: %d", statement->type);
         }

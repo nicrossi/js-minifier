@@ -82,6 +82,17 @@ Expression * CommaExpressionSemanticAction(Expression * expression, Expression *
     return newExpression;
 }
 
+LexicalDeclaration * CreateLexicalDeclarationSemanticAction(LexicalDeclarationType type, VariableDeclaratorList * variableDeclaratorList) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    if (type == CONST_DECLARATION) {
+        checkInitializer(variableDeclaratorList);
+    }
+    LexicalDeclaration * lexicalDeclaration = ecalloc(1, sizeof(LexicalDeclaration));
+    lexicalDeclaration->type = type;
+    lexicalDeclaration->declaratorList = variableDeclaratorList;
+    return lexicalDeclaration;
+}
+
 StatementListItem * DeclarationStatementListItemSemanticAction(Declaration * declaration) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     StatementListItem * item = ecalloc(1, sizeof(StatementListItem));
@@ -96,6 +107,20 @@ StatementList * EmptyBlockSemanticAction() {
     StatementList * statementList = ecalloc(1, sizeof(StatementList));
     statementList->head = statementList->tail = NULL;
     return statementList;
+}
+
+Expression * EmptyExpressionSemanticAction() {
+    _logSyntacticAnalyzerAction(__FUNCTION__ );
+    Expression * expression = ecalloc(1, sizeof(Expression));
+    expression->type = EMPTY_EXPRESSION;
+    return expression;
+}
+
+ForInitializer * EmptyForInitSemanticAction() {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    ForInitializer * forInitializer = ecalloc(1, sizeof(ForInitializer));
+    forInitializer->type = EMPTY_FOR_INIT;
+    return forInitializer;
 }
 
 StatementList * EmptyStatementListSemanticAction() {
@@ -114,11 +139,38 @@ Expression * EqualityExpressionSemanticAction(Expression * left, Expression * ri
     return expression;
 }
 
+ForInitializer * ExpressionForInitSemanticAction(Expression * expression) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    ForInitializer * forInitializer = ecalloc(1, sizeof(ForInitializer));
+    forInitializer->type = EXPRESSION_FOR_INIT;
+    forInitializer->expression = expression;
+    return forInitializer;
+}
+
 Statement * ExpressionStatementSemanticAction(Expression * expression) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     Statement * statement = ecalloc(1, sizeof(Statement));
     statement->type = EXPRESSION_STATEMENT;
     statement->expression = expression;
+    return statement;
+}
+
+ForStatement * ForIterationSemanticAction(ForInitializer * initializer, Expression * condition,
+                                          Expression * increment, Statement * body) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    ForStatement * forStatement = ecalloc(1, sizeof(ForStatement));
+    forStatement->initializer = initializer;
+    forStatement->condition = condition;
+    forStatement->increment = increment;
+    forStatement->body = body;
+    return forStatement;
+}
+
+Statement * ForStatementSemanticAction(ForStatement * forStatement) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Statement * statement = ecalloc(1, sizeof(Statement));
+    statement->type = FOR_STATEMENT;
+    statement->forStatement = forStatement;
     return statement;
 }
 
@@ -156,15 +208,12 @@ Expression * IntegerExpressionSemanticAction(const int value) {
 	return expression;
 }
 
-LexicalDeclaration * CreateLexicalDeclarationSemanticAction(LexicalDeclarationType type, VariableDeclaratorList * variableDeclaratorList) {
+ForInitializer * LexicalDeclarationForInitSemanticAction(LexicalDeclaration * forLexicalDeclaration) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
-    if (type == CONST_DECLARATION) {
-        checkInitializer(variableDeclaratorList);
-    }
-    LexicalDeclaration * lexicalDeclaration = ecalloc(1, sizeof(LexicalDeclaration));
-    lexicalDeclaration->type = type;
-    lexicalDeclaration->declaratorList = variableDeclaratorList;
-    return lexicalDeclaration;
+    ForInitializer * forInitializer = ecalloc(1, sizeof(ForInitializer));
+    forInitializer->type = LEXICAL_DECLARATION_FOR_INIT;
+    forInitializer->lexicalDeclaration = forLexicalDeclaration;
+    return forInitializer;
 }
 
 Declaration * LexicalDeclarationSemanticAction(LexicalDeclaration * lexicalDeclaration) {

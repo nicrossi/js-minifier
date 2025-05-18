@@ -70,6 +70,7 @@
 "let"                               { return KeywordLexemeAction(createLexicalAnalyzerContext(), LET_KEYWORD); }
 "if"                                { return KeywordLexemeAction(createLexicalAnalyzerContext(), IF_KEYWORD); }
 "else"                              { return KeywordLexemeAction(createLexicalAnalyzerContext(), ELSE_KEYWORD); }
+"for"                               { return KeywordLexemeAction(createLexicalAnalyzerContext(), FOR_KEYWORD); }
 
 "="                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), EQUAL); }
 "=="                                { return PunctuationLexemeAction(createLexicalAnalyzerContext(), EQUALITY); }
