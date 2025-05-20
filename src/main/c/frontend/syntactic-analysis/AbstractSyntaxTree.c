@@ -29,13 +29,20 @@ void releaseExpression(Expression * expression) {
     if (expression != NULL) {
         // TODO: Add specific cleanup logic for different expression types
         switch(expression->type) {
-            case ASSIGNMENT:
-            case BOOLEAN_EXPRESSION:
+            case ASSIGNMENT: case EQUALITY_EXPRESSION:
+            case SUB_EXPRESSION: case SUM_EXPRESSION:
+            case MULTIPLICATION_EXPRESSION: case DIVISION_EXPRESSION:
+            case GREAT_EQUAL_EXPRESSION: case LESS_EQUAL_EXPRESSION:
+            case GREATER_EXPRESSION: case LESS_EXPRESSION:
                 releaseExpression(expression->binaryExpression.leftExpression);
                 releaseExpression(expression->binaryExpression.rightExpression);
                 break;
             case IDENTIFIER: free(expression->identifierName); break;
             case STRING_LITERAL_EXPRESSION: free(expression->string); break;
+            case POSTFIX_DECREMENT_EXPR: case PREFIX_INCREMENT_EXPR:
+            case PREFIX_DECREMENT_EXPR:  case POSTFIX_INCREMENT_EXPR:
+                releaseUpdateOp(expression->updateOp);
+                break;
             default:
                 logWarning(_logger, "Unknown expression type: %d", expression->type);
         }
@@ -136,6 +143,15 @@ void releaseString(char * string) {
     logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
     free(string);
     string = NULL;
+}
+
+void releaseUpdateOp(UpdateOp * updateOp) {
+    logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (updateOp != NULL) {
+        releaseExpression(updateOp->operand);
+        free(updateOp);
+        updateOp = NULL;
+    }
 }
 
 void releaseVariableDeclarator(VariableDeclarator * variableDeclarator) {

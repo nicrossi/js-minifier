@@ -58,18 +58,27 @@
 %token <token> CLOSE_PARENTHESIS
 %token <token> COMMA
 %token <token> CONST_KEYWORD
+%token <token> DECREMENT
+%token <token> DIVISION
 %token <token> ELSE_KEYWORD
 %token <token> EQUAL
 %token <token> EQUALITY
 %token <token> FOR_KEYWORD
+%token <token> GREATER GREAT_EQUAL
 %token <token> IF_KEYWORD
+%token <token> INCREMENT
 %token <token> LET_KEYWORD
+%token <token> LESS LESS_EQUAL
+%token <token> MULTIPLICATION
 %token <token> OPEN_CURLY_BRACE
 %token <token> OPEN_PARENTHESIS
 %token <token> SEMICOLON
+%token <token> SUB
+%token <token> SUM
 %token <token> UNKNOWN
 
 /** Non-terminals. */
+%type <expression> additiveExpression
 %type <expression> assignmentExpression
 %type <statementList> block
 %type <declaration> declaration
@@ -81,13 +90,15 @@
 %type <ifStatement> ifStatement
 %type <expression> leftHandSideExpression
 %type <lexicalDeclaration> lexicalDeclaration
+%type <expression> multiplicativeExpression
 %type <expression> optionalExpression
 %type <expression> primaryExpression
 %type <program> program
+%type <expression> relationalExpression
 %type <statement> statement
-%type <expression> statementExpression
 %type <statementList> statementList
 %type <statementListItem> statementListItem
+%type <expression> unaryExpression
 %type <variableDeclarator> variableDeclarator
 %type <variableDeclaratorList> variableDeclaratorList
 
@@ -97,87 +108,190 @@
  * @see https://www.gnu.org/software/bison/manual/html_node/Precedence.html
  */
 %right EQUAL
-%left COMMA
-%left EQUALITY
-%precedence CLOSE_CURLY_BRACE // avoid conflicts with empty block
-%precedence IF_KEYWORD
-%precedence ELSE_KEYWORD
-%precedence IDENTIFIER_NAME
+%left  EQUALITY
+%left  LESS_EQUAL GREAT_EQUAL
+%left  SUM SUB
+%left  MULTIPLICATION
+%precedence UNARY
+%precedence POSTFIX_UPDATE
+%left  INCREMENT DECREMENT
+%precedence CLOSE_CURLY_BRACE
+%precedence IF_KEYWORD ELSE_KEYWORD IDENTIFIER_NAME
 
 // Dangling else, and empty statements. Default behavior is good enough.
-%expect 2
+//%expect 2
 %%
 // IMPORTANT: To use λ in the following grammar, use the %empty symbol.
-program: statementList												{ $$ = StatementListProgramSemanticAction(currentCompilerState(), $1); }
+program:
+    statementList
+        { $$ = StatementListProgramSemanticAction(currentCompilerState(), $1); }
     ;
-statementList: statementList statementListItem                      { $$ = StatementListSemanticAction($1, $2); }
-    | %empty                                                        { $$ = EmptyStatementListSemanticAction(); }
+
+statementList:
+    statementList statementListItem
+        { $$ = StatementListSemanticAction($1, $2); }
+    | %empty
+        { $$ = EmptyStatementListSemanticAction(); }
     ;
-statementListItem: declaration                                      { $$ = DeclarationStatementListItemSemanticAction($1); }
-    | statement                                                     { $$ = StatementStatementListItemSemanticAction($1); }
+
+statementListItem:
+    declaration
+        { $$ = DeclarationStatementListItemSemanticAction($1); }
+    | statement
+        { $$ = StatementStatementListItemSemanticAction($1); }
     ;
-declaration: lexicalDeclaration                                     { $$ = LexicalDeclarationSemanticAction($1); }
+declaration:
+    lexicalDeclaration
+        { $$ = LexicalDeclarationSemanticAction($1); }
     ;
-expression: expression COMMA assignmentExpression                   { $$ = CommaExpressionSemanticAction($1, $3); }
-      | assignmentExpression
-    ;
-variableDeclarator:
-    IDENTIFIER_NAME EQUAL assignmentExpression                      { $$ = VariableDeclaratorSemanticAction($1, $3); }
-    | IDENTIFIER_NAME                                               { $$ = VariableDeclaratorSemanticAction($1, NULL); }
-    ;
-variableDeclaratorList: variableDeclarator                          { $$ = VariableDeclaratorListSemanticAction($1); }
-    | variableDeclaratorList COMMA variableDeclarator               { $$ = AppendVariableDeclaratorListSemanticAction($1, $3); }
-    ;
+
 lexicalDeclaration:
-    CONST_KEYWORD variableDeclaratorList optionalSemicolon          { $$ = CreateLexicalDeclarationSemanticAction(CONST_DECLARATION, $2); }
-    | LET_KEYWORD variableDeclaratorList optionalSemicolon          { $$ = CreateLexicalDeclarationSemanticAction(LET_DECLARATION, $2); }
+    CONST_KEYWORD variableDeclaratorList optionalSemicolon
+        { $$ = CreateLexicalDeclarationSemanticAction(CONST_DECLARATION, $2); }
+    | LET_KEYWORD variableDeclaratorList optionalSemicolon
+        { $$ = CreateLexicalDeclarationSemanticAction(LET_DECLARATION, $2); }
     ;
-// primaryExpression: The most basic building blocks that evaluate to a value
-primaryExpression: INTEGER                                          { $$ = IntegerExpressionSemanticAction($1); }
-    | IDENTIFIER_NAME                                               { $$ = IdentifierExpressionSemanticAction($1); }
-    | STRING_LITERAL                                                { $$ = StringExpressionSemanticAction($1); }
+
+variableDeclaratorList:
+    variableDeclarator
+        { $$ = VariableDeclaratorListSemanticAction($1); }
+    | variableDeclaratorList COMMA variableDeclarator
+        { $$ = AppendVariableDeclaratorListSemanticAction($1, $3); }
     ;
-leftHandSideExpression: IDENTIFIER_NAME                             { $$ = IdentifierExpressionSemanticAction($1); }
+
+variableDeclarator:
+    IDENTIFIER_NAME EQUAL assignmentExpression
+        { $$ = VariableDeclaratorSemanticAction($1, $3); }
+    | IDENTIFIER_NAME
+        { $$ = VariableDeclaratorSemanticAction($1, NULL); }
     ;
-equalityExpression: equalityExpression EQUALITY primaryExpression   { $$ = EqualityExpressionSemanticAction($1, $3); }
-    | primaryExpression
+
+statement:
+    block
+        { $$ = BlockStatementSemanticAction($1); }
+    | expression SEMICOLON // Optional semicolon was making my life difficult, so it's gone. For now...
+        { $$ = ExpressionStatementSemanticAction($1); }
+    | ifStatement
+        { $$ = IfStatementSemanticAction($1); }
+    | forStatement
+        { $$ = ForStatementSemanticAction($1); }
     ;
+
+optionalSemicolon: SEMICOLON | %empty ;
+
+block:
+    OPEN_CURLY_BRACE statementList CLOSE_CURLY_BRACE
+        { $$ = BlockSemanticAction($2); }
+    | OPEN_CURLY_BRACE CLOSE_CURLY_BRACE
+        { $$ = EmptyBlockSemanticAction(); }
+    ;
+
+expression:
+    expression COMMA assignmentExpression
+        { $$ = CommaExpressionSemanticAction($1, $3); }
+    | assignmentExpression
+    ;
+
 assignmentExpression:
-    leftHandSideExpression EQUAL assignmentExpression               { $$ = AssignmentExpressionSemanticAction($1, $3); }
+    leftHandSideExpression EQUAL assignmentExpression
+        { $$ = AssignmentExpressionSemanticAction($1, $3); }
     | equalityExpression
     ;
-// Restricted version of the assignment expression
-statementExpression:
-    leftHandSideExpression EQUAL assignmentExpression { $$ = AssignmentExpressionSemanticAction($1, $3); }
+
+equalityExpression:
+    equalityExpression EQUALITY additiveExpression
+        { $$ = BinaryExpressionSemanticAction($1, $3, EQUALITY_EXPRESSION); }
+    | relationalExpression
     ;
-optionalSemicolon: SEMICOLON
-    | %empty
+
+relationalExpression:
+    relationalExpression LESS_EQUAL additiveExpression
+        { $$ = BinaryExpressionSemanticAction($1, $3, LESS_EQUAL_EXPRESSION); }
+    | relationalExpression GREAT_EQUAL additiveExpression
+        { $$ = BinaryExpressionSemanticAction($1, $3, GREAT_EQUAL_EXPRESSION); }
+    | relationalExpression LESS additiveExpression
+        { $$ = BinaryExpressionSemanticAction($1, $3, LESS_EXPRESSION); }
+    | relationalExpression GREATER additiveExpression
+        { $$ = BinaryExpressionSemanticAction($1, $3, GREATER_EXPRESSION); }
+    | additiveExpression
     ;
-optionalExpression: %empty                                         { $$ = EmptyExpressionSemanticAction(); }
-    | expression
+
+additiveExpression:
+    additiveExpression SUM multiplicativeExpression
+        { $$ = BinaryExpressionSemanticAction($1, $3, SUM_EXPRESSION); }
+    | additiveExpression SUB multiplicativeExpression
+        { $$ = BinaryExpressionSemanticAction($1, $3, SUB_EXPRESSION); }
+    | multiplicativeExpression
     ;
+
+multiplicativeExpression:
+    multiplicativeExpression MULTIPLICATION unaryExpression
+        { $$ = BinaryExpressionSemanticAction($1, $3, MULTIPLICATION_EXPRESSION); }
+    | multiplicativeExpression DIVISION unaryExpression
+        { $$ = BinaryExpressionSemanticAction($1, $3, DIVISION_EXPRESSION); }
+    | unaryExpression
+    ;
+
+unaryExpression:
+    INCREMENT leftHandSideExpression %prec UNARY
+        { $$ = UnaryExpressionSemanticAction($2, INCREMENT_OP, false); }
+    | DECREMENT leftHandSideExpression %prec UNARY
+        { $$ = UnaryExpressionSemanticAction($2, DECREMENT_OP, false); }
+    | leftHandSideExpression INCREMENT  %prec POSTFIX_UPDATE
+        { $$ = UnaryExpressionSemanticAction($1, INCREMENT_OP, true); }
+    | leftHandSideExpression DECREMENT %prec POSTFIX_UPDATE
+        { $$ = UnaryExpressionSemanticAction($1, DECREMENT_OP, true); }
+    | leftHandSideExpression %prec UNARY
+    | primaryExpression
+    ;
+
+leftHandSideExpression:
+    IDENTIFIER_NAME %prec POSTFIX_UPDATE
+        { $$ = IdentifierExpressionSemanticAction($1); }
+    ;
+
+// primaryExpression: The most basic building blocks that evaluate to a value
+primaryExpression:
+    INTEGER
+        { $$ = IntegerExpressionSemanticAction($1); }
+    | STRING_LITERAL
+        { $$ = StringExpressionSemanticAction($1); }
+    | OPEN_PARENTHESIS expression CLOSE_PARENTHESIS
+        { $$ = ParenthesisExpressionSemanticAction($2); }
+    ;
+
 ifStatement:
-    IF_KEYWORD OPEN_PARENTHESIS expression CLOSE_PARENTHESIS statement %prec ELSE_KEYWORD { $$ = IfSemanticAction($3, $5, NULL); }
-    | IF_KEYWORD OPEN_PARENTHESIS expression CLOSE_PARENTHESIS statement ELSE_KEYWORD statement { $$ = IfSemanticAction($3, $5, $7); }
+    IF_KEYWORD OPEN_PARENTHESIS expression CLOSE_PARENTHESIS statement %prec IF_KEYWORD
+        { $$ = IfSemanticAction($3, $5, NULL); }
+    | IF_KEYWORD OPEN_PARENTHESIS expression CLOSE_PARENTHESIS statement ELSE_KEYWORD statement
+        { $$ = IfSemanticAction($3, $5, $7); }
     ;
-forStatement
-   : FOR_KEYWORD OPEN_PARENTHESIS forStatementInit SEMICOLON optionalExpression SEMICOLON optionalExpression CLOSE_PARENTHESIS statement
+
+forStatement:
+    FOR_KEYWORD OPEN_PARENTHESIS forStatementInit SEMICOLON optionalExpression SEMICOLON optionalExpression CLOSE_PARENTHESIS statement
       { $$ = ForIterationSemanticAction($3, $5, $7, $9);}
    ;
-forStatementInit: %empty                                          { $$ = EmptyForInitSemanticAction(); }
-    | expression                                                  { $$ = ExpressionForInitSemanticAction($1); }
-    | forLexicalDeclaration                                       { $$ = LexicalDeclarationForInitSemanticAction($1); }
+
+forStatementInit:
+    %empty
+        { $$ = EmptyForInitSemanticAction(); }
+    | expression
+        { $$ = ExpressionForInitSemanticAction($1); }
+    | forLexicalDeclaration
+        { $$ = LexicalDeclarationForInitSemanticAction($1); }
     ;
-forLexicalDeclaration: CONST_KEYWORD variableDeclaratorList { $$ = CreateLexicalDeclarationSemanticAction(CONST_DECLARATION, $2); }
-    | LET_KEYWORD variableDeclaratorList                    { $$ = CreateLexicalDeclarationSemanticAction(LET_DECLARATION, $2); }
+
+forLexicalDeclaration:
+    CONST_KEYWORD variableDeclaratorList
+        { $$ = CreateLexicalDeclarationSemanticAction(CONST_DECLARATION, $2); }
+    | LET_KEYWORD variableDeclaratorList
+        { $$ = CreateLexicalDeclarationSemanticAction(LET_DECLARATION, $2); }
     ;
-block:
-    OPEN_CURLY_BRACE statementList CLOSE_CURLY_BRACE               { $$ = BlockSemanticAction($2); }
-    | OPEN_CURLY_BRACE CLOSE_CURLY_BRACE                           { $$ = EmptyBlockSemanticAction(); }
-    ;
-statement: block                                              { $$ = BlockStatementSemanticAction($1); }
-    | statementExpression optionalSemicolon                   { $$ = ExpressionStatementSemanticAction($1); }
-    | ifStatement                                             { $$ = IfStatementSemanticAction($1); }
-    | forStatement                                            { $$ = ForStatementSemanticAction($1); }
+
+optionalExpression:
+    %empty
+        { $$ = EmptyExpressionSemanticAction(); }
+    | expression
+        { $$ = OptionalExpression($1); }
     ;
 %%

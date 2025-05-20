@@ -3,6 +3,7 @@
 
 #include "../../shared/Logger.h"
 #include <stdlib.h>
+#include <stdbool.h>
 
 /** Initialize module's internal state. */
 void initializeAbstractSyntaxTreeModule();
@@ -20,17 +21,30 @@ typedef struct Program Program;
 typedef struct Statement Statement;
 typedef struct StatementList StatementList;
 typedef struct StatementListItem StatementListItem;
+typedef struct UpdateOp UpdateOp;
 typedef struct VariableDeclarator VariableDeclarator;
 typedef struct VariableDeclaratorList VariableDeclaratorList;
 typedef struct Expression Expression;
 
 typedef enum {
     ASSIGNMENT,
-    BOOLEAN_EXPRESSION,
+    DIVISION_EXPRESSION,
+    EQUALITY_EXPRESSION,
     EMPTY_EXPRESSION,
+    GREATER_EXPRESSION,
+    GREAT_EQUAL_EXPRESSION,
     IDENTIFIER,
     INTEGER_EXPRESSION,
+    LESS_EXPRESSION,
+    LESS_EQUAL_EXPRESSION,
+    MULTIPLICATION_EXPRESSION,
+    POSTFIX_INCREMENT_EXPR, // expr++
+    POSTFIX_DECREMENT_EXPR, // expr--
+    PREFIX_INCREMENT_EXPR,  // ++expr
+    PREFIX_DECREMENT_EXPR,  // --expr
     STRING_LITERAL_EXPRESSION,
+    SUB_EXPRESSION,
+    SUM_EXPRESSION,
 } ExpressionType;
 
 typedef enum {
@@ -43,6 +57,11 @@ typedef enum {
     EXPRESSION_FOR_INIT,
     LEXICAL_DECLARATION_FOR_INIT
 } ForInitializerType;
+
+typedef enum {
+    INCREMENT_OP,
+    DECREMENT_OP,
+} OperatorType;
 
 typedef enum {
     EXPRESSION_STATEMENT,
@@ -70,6 +89,7 @@ struct Expression {
         BinaryExpression binaryExpression;
         char * identifierName;
         char * string;
+        UpdateOp * updateOp;
         int value;
     };
 };
@@ -124,6 +144,12 @@ struct StatementListItem {
     StatementType type;
 };
 
+struct UpdateOp {
+    OperatorType operator;
+    Expression * operand;
+    bool isPostfix;
+};
+
 struct VariableDeclarator {
     char * identifier;
     Expression * initializer;
@@ -153,6 +179,7 @@ void releaseStatement(Statement * statement);
 void releaseStatementList(StatementList * statementList);
 void releaseString(char * string);
 void releaseStatementListItem(StatementListItem * statementListItem);
+void releaseUpdateOp(UpdateOp * updateOp);
 void releaseVariableDeclarator(VariableDeclarator * variableDeclarator);
 void releaseVariableDeclaratorList(VariableDeclaratorList * variableDeclaratorList);
 #endif

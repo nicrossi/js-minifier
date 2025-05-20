@@ -80,6 +80,16 @@
 ")"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), CLOSE_PARENTHESIS); }
 "{"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), OPEN_CURLY_BRACE); }
 "}"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), CLOSE_CURLY_BRACE); }
+"++"                                { return PunctuationLexemeAction(createLexicalAnalyzerContext(), INCREMENT); }
+"--"                                { return PunctuationLexemeAction(createLexicalAnalyzerContext(), DECREMENT); }
+">="                                { return PunctuationLexemeAction(createLexicalAnalyzerContext(), GREAT_EQUAL); }
+">"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), GREATER); }
+"<"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), LESS); }
+"<="                                { return PunctuationLexemeAction(createLexicalAnalyzerContext(), LESS_EQUAL); }
+"-"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), SUB); }
+"+"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), SUM); }
+"*"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), MULTIPLICATION); }
+"/"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), DIVISION); }
 
 [a-zA-Z_\\$][a-zA-Z0-9_\\$]*        { return IdentifierNameLexemeAction(createLexicalAnalyzerContext()); }
 

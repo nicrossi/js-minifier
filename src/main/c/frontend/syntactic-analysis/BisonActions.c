@@ -130,10 +130,10 @@ StatementList * EmptyStatementListSemanticAction() {
     return statementList;
 }
 
-Expression * EqualityExpressionSemanticAction(Expression * left, Expression * right) {
+Expression * BinaryExpressionSemanticAction(Expression * left, Expression * right, ExpressionType type) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     Expression * expression = ecalloc(1, sizeof(Expression));
-    expression->type = BOOLEAN_EXPRESSION;
+    expression->type = type;
     expression->binaryExpression.leftExpression = left;
     expression->binaryExpression.rightExpression = right;
     return expression;
@@ -223,6 +223,16 @@ Declaration * LexicalDeclarationSemanticAction(LexicalDeclaration * lexicalDecla
     return declaration;
 }
 
+Expression * OptionalExpression(Expression * expression) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    return expression;
+}
+
+Expression * ParenthesisExpressionSemanticAction(Expression * expression) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    return expression;
+}
+
 Program * StatementListProgramSemanticAction(CompilerState * compilerState, StatementList * statementList) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     Program * program = ecalloc(1, sizeof(Program));
@@ -269,6 +279,20 @@ Expression * StringExpressionSemanticAction(const char * s) {
     return expression;
 }
 
+Expression * UnaryExpressionSemanticAction(Expression * operand, OperatorType opType, bool isPostfix) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Expression * expression = ecalloc(1, sizeof(Expression));
+    UpdateOp * updateOp = ecalloc(1, sizeof(UpdateOp));
+    updateOp->operand = operand;
+    updateOp->operator = opType;
+    updateOp->isPostfix = isPostfix;
+    expression->type = isPostfix
+        ? (opType == INCREMENT_OP) ? POSTFIX_INCREMENT_EXPR : POSTFIX_DECREMENT_EXPR
+        : (opType == INCREMENT_OP) ? PREFIX_INCREMENT_EXPR : PREFIX_DECREMENT_EXPR;
+    expression->updateOp = updateOp;
+    return expression;
+}
+
 VariableDeclaratorList * VariableDeclaratorListSemanticAction(VariableDeclarator * variableDeclarator) {
     _logSyntacticAnalyzerAction(__FUNCTION__ );
     VariableDeclaratorList * variableDeclaratorList = ecalloc(1, sizeof(VariableDeclaratorList));
@@ -295,4 +319,3 @@ void checkInitializer(VariableDeclaratorList * list) {
         }
     }
 }
-
