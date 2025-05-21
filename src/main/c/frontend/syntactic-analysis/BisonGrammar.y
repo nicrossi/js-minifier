@@ -78,6 +78,7 @@
 %token <token> MULTIPLICATION
 %token <token> OPEN_CURLY_BRACE
 %token <token> OPEN_PARENTHESIS
+%token <token> REMAINDER
 %token <token> RETURN_KEYWORD
 %token <token> SEMICOLON
 %token <token> SUB
@@ -121,7 +122,7 @@
 %left  EQUALITY STRICT_EQUALITY INEQUALITY STRICT_INEQUALITY
 %left  LESS_EQUAL GREAT_EQUAL
 %left  SUM SUB
-%left  MULTIPLICATION
+%left  MULTIPLICATION DIVISION REMAINDER
 %precedence UNARY
 %precedence POSTFIX_UPDATE
 %left  INCREMENT DECREMENT
@@ -265,6 +266,8 @@ multiplicativeExpression:
         { $$ = BinaryExpressionSemanticAction($1, $3, MULTIPLICATION_EXPRESSION); }
     | multiplicativeExpression DIVISION unaryExpression
         { $$ = BinaryExpressionSemanticAction($1, $3, DIVISION_EXPRESSION); }
+    | multiplicativeExpression  REMAINDER unaryExpression
+        { $$ = BinaryExpressionSemanticAction($1, $3, REMAINDER_EXPRESSION); }
     | unaryExpression
     ;
 

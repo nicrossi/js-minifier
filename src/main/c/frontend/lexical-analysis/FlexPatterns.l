@@ -97,6 +97,7 @@
 "+"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), SUM); }
 "*"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), MULTIPLICATION); }
 "/"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), DIVISION); }
+"%"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), REMAINDER); }
 
 [a-zA-Z_\\$][a-zA-Z0-9_\\$]*        { return IdentifierNameLexemeAction(createLexicalAnalyzerContext()); }
 

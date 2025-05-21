@@ -54,7 +54,7 @@ void releaseExpression(Expression * expression) { //NOLINT
             case ASSIGNMENT: case EQUALITY_EXPRESSION: case INEQUALITY_EXPRESSION:
             case STRICT_EQUALITY_EXPRESSION: case STRICT_INEQUALITY_EXPRESSION:
             case SUB_EXPRESSION: case SUM_EXPRESSION:
-            case MULTIPLICATION_EXPRESSION: case DIVISION_EXPRESSION:
+            case MULTIPLICATION_EXPRESSION: case DIVISION_EXPRESSION: case REMAINDER_EXPRESSION:
             case GREAT_EQUAL_EXPRESSION: case LESS_EQUAL_EXPRESSION:
             case GREATER_EXPRESSION: case LESS_EXPRESSION:
                 releaseExpression(expression->binaryExpression.leftExpression);
