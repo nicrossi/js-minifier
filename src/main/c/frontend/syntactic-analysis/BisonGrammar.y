@@ -14,10 +14,12 @@
 	Token token;
 
 	/** Non-terminals. */
+	ArgumentList * argumentList;
 	Declaration * declaration;
 	Expression * expression;
 	ForInitializer * forStatementInit;
 	ForStatement * forStatement;
+	FunctionDeclaration * functionDeclaration;
 	IfStatement * ifStatement;
 	LexicalDeclaration * lexicalDeclaration;
 	Program * program;
@@ -66,6 +68,7 @@
 %token <token> EQUAL
 %token <token> EQUALITY
 %token <token> FOR_KEYWORD
+%token <token> FUNCTION_KEYWORD
 %token <token> GREATER GREAT_EQUAL
 %token <token> IF_KEYWORD
 %token <token> INCREMENT
@@ -74,6 +77,7 @@
 %token <token> MULTIPLICATION
 %token <token> OPEN_CURLY_BRACE
 %token <token> OPEN_PARENTHESIS
+%token <token> RETURN_KEYWORD
 %token <token> SEMICOLON
 %token <token> SUB
 %token <token> SUM
@@ -81,6 +85,7 @@
 
 /** Non-terminals. */
 %type <expression> additiveExpression
+%type <argumentList> argumentList
 %type <expression> assignmentExpression
 %type <statementList> block
 %type <declaration> declaration
@@ -88,12 +93,14 @@
 %type <expression> equalityExpression
 %type <forStatementInit> forStatementInit
 %type <forStatement> forStatement
+%type <functionDeclaration> functionDeclaration
 %type <lexicalDeclaration> forLexicalDeclaration
 %type <ifStatement> ifStatement
 %type <expression> leftHandSideExpression
 %type <lexicalDeclaration> lexicalDeclaration
 %type <expression> multiplicativeExpression
 %type <expression> optionalExpression
+%type <variableDeclaratorList> parameterList
 %type <expression> primaryExpression
 %type <program> program
 %type <expression> relationalExpression
@@ -117,8 +124,8 @@
 %precedence UNARY
 %precedence POSTFIX_UPDATE
 %left  INCREMENT DECREMENT
-%precedence CLOSE_CURLY_BRACE
-%precedence IF_KEYWORD ELSE_KEYWORD IDENTIFIER_NAME
+%nonassoc IF_WITHOUT_ELSE
+%nonassoc ELSE_KEYWORD
 
 // Dangling else, and empty statements. Default behavior is good enough.
 //%expect 2
@@ -145,6 +152,8 @@ statementListItem:
 declaration:
     lexicalDeclaration
         { $$ = LexicalDeclarationSemanticAction($1); }
+    | functionDeclaration
+        { $$ = FunctionDeclarationSemanticAction($1); }
     ;
 
 lexicalDeclaration:
@@ -152,6 +161,20 @@ lexicalDeclaration:
         { $$ = CreateLexicalDeclarationSemanticAction(CONST_DECLARATION, $2); }
     | LET_KEYWORD variableDeclaratorList optionalSemicolon
         { $$ = CreateLexicalDeclarationSemanticAction(LET_DECLARATION, $2); }
+    ;
+
+functionDeclaration:
+    FUNCTION_KEYWORD IDENTIFIER_NAME OPEN_PARENTHESIS parameterList CLOSE_PARENTHESIS block
+        { $$ = FunctionSemanticAction($2, $4, $6); }
+    ;
+
+parameterList:
+    %empty
+        { $$ = EmptyParameterListSemanticAction(); }
+    | parameterList COMMA IDENTIFIER_NAME
+        { $$ = AppendParameterListSemanticAction($1, $3); }
+    | IDENTIFIER_NAME
+        { $$ = ParameterListSemanticAction($1); }
     ;
 
 variableDeclaratorList:
@@ -177,6 +200,8 @@ statement:
         { $$ = BreakStatementSemanticAction(); }
     |  CONTINUE_KEYWORD SEMICOLON
         { $$ = ContinueStatementSemanticAction(); }
+    | RETURN_KEYWORD optionalExpression SEMICOLON
+        { $$ = ReturnStatementSemanticAction($2); }
     | ifStatement
         { $$ = IfStatementSemanticAction($1); }
     | forStatement
@@ -239,35 +264,45 @@ multiplicativeExpression:
     ;
 
 unaryExpression:
-    INCREMENT leftHandSideExpression %prec UNARY
+    INCREMENT leftHandSideExpression
         { $$ = UnaryExpressionSemanticAction($2, INCREMENT_OP, false); }
-    | DECREMENT leftHandSideExpression %prec UNARY
+    | DECREMENT leftHandSideExpression
         { $$ = UnaryExpressionSemanticAction($2, DECREMENT_OP, false); }
-    | leftHandSideExpression INCREMENT  %prec POSTFIX_UPDATE
+    | leftHandSideExpression INCREMENT
         { $$ = UnaryExpressionSemanticAction($1, INCREMENT_OP, true); }
-    | leftHandSideExpression DECREMENT %prec POSTFIX_UPDATE
+    | leftHandSideExpression DECREMENT
         { $$ = UnaryExpressionSemanticAction($1, DECREMENT_OP, true); }
     | leftHandSideExpression %prec UNARY
     | primaryExpression
     ;
 
 leftHandSideExpression:
-    IDENTIFIER_NAME %prec POSTFIX_UPDATE
+    IDENTIFIER_NAME
         { $$ = IdentifierExpressionSemanticAction($1); }
     ;
 
-// primaryExpression: The most basic building blocks that evaluate to a value
 primaryExpression:
     INTEGER
         { $$ = IntegerExpressionSemanticAction($1); }
     | STRING_LITERAL
         { $$ = StringExpressionSemanticAction($1); }
+    | leftHandSideExpression OPEN_PARENTHESIS  argumentList CLOSE_PARENTHESIS
+        { $$ = CallExpressionSemanticAction($1, $3); }
     | OPEN_PARENTHESIS expression CLOSE_PARENTHESIS
         { $$ = ParenthesisExpressionSemanticAction($2); }
     ;
 
+argumentList:
+    %empty
+        { $$ = EmptyArgumentListSemanticAction(); }
+    | assignmentExpression
+        { $$ = ArgumentListSemanticAction($1); }
+    | argumentList COMMA assignmentExpression
+        { $$ = AppendArgumentListSemanticAction($1, $3); }
+    ;
+
 ifStatement:
-    IF_KEYWORD OPEN_PARENTHESIS expression CLOSE_PARENTHESIS statement %prec IF_KEYWORD
+    IF_KEYWORD OPEN_PARENTHESIS expression CLOSE_PARENTHESIS statement %prec IF_WITHOUT_ELSE
         { $$ = IfSemanticAction($3, $5, NULL); }
     | IF_KEYWORD OPEN_PARENTHESIS expression CLOSE_PARENTHESIS statement ELSE_KEYWORD statement
         { $$ = IfSemanticAction($3, $5, $7); }

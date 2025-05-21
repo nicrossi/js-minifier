@@ -41,6 +41,41 @@ VariableDeclaratorList * AppendVariableDeclaratorListSemanticAction(VariableDecl
     return list;
 }
 
+ArgumentList * AppendArgumentListSemanticAction(ArgumentList * argumentList, Expression * expression) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    assert(argumentList != NULL);
+    Argument * argument = ecalloc(1, sizeof(Argument));
+    argument->expression = expression;
+    argument->next = NULL;
+    argumentList->tail->next = argument;
+    argumentList->tail = argument;
+    return argumentList;
+}
+
+VariableDeclaratorList * AppendParameterListSemanticAction(VariableDeclaratorList * list,
+                                                           const char * parameter) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    assert(list->head != NULL);
+    VariableDeclarator * paramItem = ecalloc(1, sizeof(VariableDeclarator));
+    paramItem->identifier = strdup(parameter);
+    paramItem->initializer = NULL;
+    paramItem->next = NULL;
+    free((char *) parameter);
+    list->tail->next = paramItem;
+    list->tail = paramItem;
+    return list;
+}
+
+ArgumentList * ArgumentListSemanticAction(Expression * expression) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    ArgumentList * argumentList = ecalloc(1, sizeof(ArgumentList));
+    Argument * argument = ecalloc(1, sizeof(Argument));
+    argument->expression = expression;
+    argument->next = NULL;
+    argumentList->head = argumentList->tail =argument;
+    return argumentList;
+}
+
 Expression * AssignmentExpressionSemanticAction(Expression * left, Expression * right) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     Expression * expression = ecalloc(1, sizeof(Expression));
@@ -68,6 +103,17 @@ Statement * BlockStatementSemanticAction(StatementList * statementList) {
     statement->type = BLOCK_STATEMENT;
     statement->block = statementList;
     return statement;
+}
+
+Expression * CallExpressionSemanticAction(Expression * callee, ArgumentList * argumentList) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Expression * expression = ecalloc(1, sizeof(Expression));
+    expression->type = CALL_EXPRESSION;
+    CallExpression * call = ecalloc(1, sizeof(CallExpression));
+    call->callee = callee;
+    call->argumentList = argumentList;
+    expression->callExpression = call;
+    return expression;
 }
 
 Expression * ChainedAssignmentSemanticAction(Expression * left, Expression * right) {
@@ -116,6 +162,13 @@ StatementListItem * DeclarationStatementListItemSemanticAction(Declaration * dec
     return item;
 }
 
+ArgumentList * EmptyArgumentListSemanticAction() {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    ArgumentList * argumentList = ecalloc(1, sizeof(ArgumentList));
+    argumentList->head = argumentList->tail = NULL;
+    return argumentList;
+}
+
 StatementList * EmptyBlockSemanticAction() {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     StatementList * statementList = ecalloc(1, sizeof(StatementList));
@@ -135,6 +188,13 @@ ForInitializer * EmptyForInitSemanticAction() {
     ForInitializer * forInitializer = ecalloc(1, sizeof(ForInitializer));
     forInitializer->type = EMPTY_FOR_INIT;
     return forInitializer;
+}
+
+VariableDeclaratorList * EmptyParameterListSemanticAction() {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    VariableDeclaratorList * variableDeclaratorList = ecalloc(1, sizeof(VariableDeclaratorList));
+    variableDeclaratorList->head = variableDeclaratorList->tail = NULL;
+    return variableDeclaratorList;
 }
 
 StatementList * EmptyStatementListSemanticAction() {
@@ -188,6 +248,24 @@ Statement * ForStatementSemanticAction(ForStatement * forStatement) {
     return statement;
 }
 
+Declaration * FunctionDeclarationSemanticAction(FunctionDeclaration * functionDeclaration) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Declaration * declaration = ecalloc(1, sizeof(Declaration));
+    declaration->type = FUNCTION;
+    declaration->functionDeclaration = functionDeclaration;
+    return declaration;
+}
+
+FunctionDeclaration * FunctionSemanticAction(const char * identifier, VariableDeclaratorList * parameterList, StatementList * body) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    FunctionDeclaration * functionDeclaration = ecalloc(1, sizeof(FunctionDeclaration));
+    functionDeclaration->identifier = strdup(identifier);
+    functionDeclaration->parameterList = parameterList;
+    functionDeclaration->body = body;
+    free((char *) identifier);
+    return functionDeclaration;
+}
+
 Expression * IdentifierExpressionSemanticAction(const char * identifier) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     Expression * expression = ecalloc(1, sizeof(Expression));
@@ -233,6 +311,7 @@ ForInitializer * LexicalDeclarationForInitSemanticAction(LexicalDeclaration * fo
 Declaration * LexicalDeclarationSemanticAction(LexicalDeclaration * lexicalDeclaration) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     Declaration * declaration = ecalloc(1, sizeof(Declaration));
+    declaration->type = LEXICAL;
     declaration->lexicalDeclaration = lexicalDeclaration;
     return declaration;
 }
@@ -242,9 +321,29 @@ Expression * OptionalExpression(Expression * expression) {
     return expression;
 }
 
+VariableDeclaratorList * ParameterListSemanticAction(const char * parameter) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    VariableDeclaratorList * paramList = ecalloc(1, sizeof(VariableDeclaratorList));
+    VariableDeclarator * item = ecalloc(1, sizeof(VariableDeclarator));
+    item->identifier = strdup(parameter);
+    item->initializer = NULL;
+    item->next = NULL;
+    free((char *) parameter);
+    paramList->head = paramList->tail = item;
+    return paramList;
+}
+
 Expression * ParenthesisExpressionSemanticAction(Expression * expression) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     return expression;
+}
+
+Statement * ReturnStatementSemanticAction(Expression * expression) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Statement * statement = ecalloc(1, sizeof(Statement));
+    statement->type = RETURN_STATEMENT;
+    statement->expression = expression;
+    return statement;
 }
 
 Program * StatementListProgramSemanticAction(CompilerState * compilerState, StatementList * statementList) {

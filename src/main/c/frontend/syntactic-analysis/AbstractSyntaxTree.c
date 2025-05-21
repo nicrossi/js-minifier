@@ -15,19 +15,34 @@ void shutdownAbstractSyntaxTreeModule() {
 }
 
 /** PUBLIC FUNCTIONS */
-void releaseDeclaration(Declaration * declaration) {
+void releaseArgumentList(ArgumentList * list) {
     logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-    if (declaration != NULL) {
-        releaseLexicalDeclaration(declaration->lexicalDeclaration);
-        free(declaration);
-        declaration = NULL;
+    if (list == NULL) return;
+
+    Argument * current = list->head;
+    while (current != NULL) {
+        Argument * next = current->next;
+        releaseExpression(current->expression);
+        free(current);
+        current = next;
     }
 }
+void releaseDeclaration(Declaration * declaration) { //NOLINT
+    logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (declaration == NULL) return;
 
-void releaseExpression(Expression * expression) {
+    if (declaration->type == FUNCTION) {
+        releaseFunctionDeclaration(declaration->functionDeclaration);
+    } else if (declaration->type == LEXICAL) {
+        releaseLexicalDeclaration(declaration->lexicalDeclaration);
+    }
+    free(declaration);
+    declaration = NULL;
+}
+
+void releaseExpression(Expression * expression) { //NOLINT
     logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
     if (expression != NULL) {
-        // TODO: Add specific cleanup logic for different expression types
         switch(expression->type) {
             case ASSIGNMENT: case EQUALITY_EXPRESSION:
             case SUB_EXPRESSION: case SUM_EXPRESSION:
@@ -49,6 +64,15 @@ void releaseExpression(Expression * expression) {
         free(expression);
         expression = NULL;
     }
+}
+
+void releaseFunctionDeclaration(FunctionDeclaration * functionDeclaration) { //NOLINT
+    if (functionDeclaration == NULL) return;
+    free(functionDeclaration->identifier);
+    releaseVariableDeclaratorList(functionDeclaration->parameterList);
+    releaseStatementList(functionDeclaration->body);
+    free(functionDeclaration);
+    functionDeclaration = NULL;
 }
 
 void releaseForInitializer(ForInitializer * forInitializer) {
@@ -96,15 +120,15 @@ void releaseLexicalDeclaration(LexicalDeclaration * lexicalConst) {
     }
 }
 
-void releaseStatement(Statement * statement) {
+void releaseStatement(Statement * statement) { //NOLINT
     logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
     if (statement != NULL) {
-        // TODO: Add specific cleanup logic for different statement types
         switch(statement->type) {
             case EXPRESSION_STATEMENT: releaseExpression(statement->expression); break;
             case IF_STATEMENT:         releaseIfStatement(statement->ifStatement); break;
             case BLOCK_STATEMENT:      releaseStatementList(statement->block); break;
             case FOR_STATEMENT:        releaseForStatement(statement->forStatement); break;
+            case RETURN_STATEMENT:     releaseExpression(statement->expression); break;
             default:
                 logWarning(_logger, "Unknown statement type: %d", statement->type);
         }

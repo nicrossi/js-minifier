@@ -14,9 +14,11 @@ void shutdownAbstractSyntaxTreeModule();
 /**
  * This typedefs allows self-referencing types.
  */
-
+typedef struct Argument Argument;
+typedef struct ArgumentList ArgumentList;
 typedef struct Declaration Declaration;
 typedef struct LexicalDeclaration LexicalDeclaration;
+typedef struct FunctionDeclaration FunctionDeclaration;
 typedef struct Program Program;
 typedef struct Statement Statement;
 typedef struct StatementList StatementList;
@@ -27,7 +29,13 @@ typedef struct VariableDeclaratorList VariableDeclaratorList;
 typedef struct Expression Expression;
 
 typedef enum {
+    LEXICAL,
+    FUNCTION,
+} DeclarationType;
+
+typedef enum {
     ASSIGNMENT,
+    CALL_EXPRESSION,
     DIVISION_EXPRESSION,
     EQUALITY_EXPRESSION,
     EMPTY_EXPRESSION,
@@ -71,24 +79,45 @@ typedef enum {
     EXPRESSION_STATEMENT,
     FOR_STATEMENT,
     IF_STATEMENT,
+    RETURN_STATEMENT,
 } StatementType;
 
 /**
  * Node types for the Abstract Syntax Tree (AST).
  */
+struct Argument {
+    Expression * expression;
+    Argument * next;
+};
+
+struct ArgumentList {
+    Argument * head;
+    Argument * tail;
+};
+
 typedef struct {
     Expression * leftExpression;
     Expression * rightExpression;
 } BinaryExpression;
 
 struct Declaration {
-    LexicalDeclaration * lexicalDeclaration;
+    DeclarationType type;
+    union {
+        LexicalDeclaration * lexicalDeclaration;
+        FunctionDeclaration * functionDeclaration;
+    };
 };
+
+typedef struct {
+    Expression * callee;
+    ArgumentList * argumentList;
+} CallExpression;
 
 struct Expression {
     ExpressionType type;
     union {
         BinaryExpression binaryExpression;
+        CallExpression * callExpression;
         char * identifierName;
         char * string;
         UpdateOp * updateOp;
@@ -120,6 +149,12 @@ typedef struct {
 struct LexicalDeclaration {
     LexicalDeclarationType type;
     VariableDeclaratorList * declaratorList;
+};
+
+struct FunctionDeclaration {
+    char * identifier;
+    VariableDeclaratorList * parameterList;
+    StatementList * body;
 };
 
 struct Statement {
@@ -170,8 +205,10 @@ struct Program {
 /**
  * Node recursive destructors.
  */
+void releaseArgumentList(ArgumentList * argumentList);
 void releaseDeclaration(Declaration * declaration);
 void releaseExpression(Expression * expression);
+void releaseFunctionDeclaration(FunctionDeclaration * functionDeclaration);
 void releaseForInitializer(ForInitializer * forInitializer);
 void releaseForStatement(ForStatement * forStatement);
 void releaseIfStatement(IfStatement * ifStatement);
