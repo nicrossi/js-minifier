@@ -53,10 +53,10 @@ void releaseExpression(Expression * expression) { //NOLINT
         switch(expression->type) {
             case ASSIGNMENT: case EQUALITY_EXPRESSION: case INEQUALITY_EXPRESSION:
             case STRICT_EQUALITY_EXPRESSION: case STRICT_INEQUALITY_EXPRESSION:
-            case SUB_EXPRESSION: case SUM_EXPRESSION:
+            case SUB_EXPRESSION: case SUM_EXPRESSION: case POWER_EXPRESSION:
             case MULTIPLICATION_EXPRESSION: case DIVISION_EXPRESSION: case REMAINDER_EXPRESSION:
             case GREAT_EQUAL_EXPRESSION: case LESS_EQUAL_EXPRESSION:
-            case GREATER_EXPRESSION: case LESS_EXPRESSION:
+            case GREATER_EXPRESSION: case LESS_EXPRESSION: case EXPONENTIATION_EXPRESSION:
                 releaseExpression(expression->binaryExpression.leftExpression);
                 releaseExpression(expression->binaryExpression.rightExpression);
                 break;

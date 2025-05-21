@@ -75,7 +75,8 @@
 %token <token> INCREMENT
 %token <token> LET_KEYWORD
 %token <token> LESS LESS_EQUAL
-%token <token> MULTIPLICATION
+%token <token> LOGICAL_NOT BITWISE_NOT
+%token <token> MULTIPLICATION EXPONENTIATION
 %token <token> OPEN_CURLY_BRACE
 %token <token> OPEN_PARENTHESIS
 %token <token> REMAINDER
@@ -100,9 +101,10 @@
 %type <ifStatement> ifStatement
 %type <expression> leftHandSideExpression
 %type <lexicalDeclaration> lexicalDeclaration
-%type <expression> multiplicativeExpression
+%type <expression> multiplicativeExpression powerExpression
 %type <expression> optionalExpression
 %type <variableDeclaratorList> parameterList
+%type <expression> postfixExpression
 %type <expression> primaryExpression
 %type <program> program
 %type <expression> relationalExpression
@@ -124,13 +126,14 @@
 %left  SUM SUB
 %left  MULTIPLICATION DIVISION REMAINDER
 %precedence UNARY
+%right EXPONENTIATION
 %precedence POSTFIX_UPDATE
 %left  INCREMENT DECREMENT
 %nonassoc IF_WITHOUT_ELSE
 %nonassoc ELSE_KEYWORD
 
 // Dangling else, and empty statements. Default behavior is good enough.
-%expect 2
+//%expect 2
 %%
 // IMPORTANT: To use λ in the following grammar, use the %empty symbol.
 program:
@@ -261,6 +264,12 @@ additiveExpression:
     | multiplicativeExpression
     ;
 
+powerExpression:
+    unaryExpression
+    | postfixExpression EXPONENTIATION powerExpression
+        { $$ = BinaryExpressionSemanticAction($1, $3, EXPONENTIATION_EXPRESSION); }
+    ;
+
 multiplicativeExpression:
     multiplicativeExpression MULTIPLICATION unaryExpression
         { $$ = BinaryExpressionSemanticAction($1, $3, MULTIPLICATION_EXPRESSION); }
@@ -268,7 +277,16 @@ multiplicativeExpression:
         { $$ = BinaryExpressionSemanticAction($1, $3, DIVISION_EXPRESSION); }
     | multiplicativeExpression  REMAINDER unaryExpression
         { $$ = BinaryExpressionSemanticAction($1, $3, REMAINDER_EXPRESSION); }
-    | unaryExpression
+    | powerExpression
+    ;
+
+postfixExpression:
+    leftHandSideExpression INCREMENT
+        { $$ = UnaryExpressionSemanticAction($1, INCREMENT_OP, true); }
+    | leftHandSideExpression DECREMENT
+        { $$ = UnaryExpressionSemanticAction($1, DECREMENT_OP, true); }
+    | leftHandSideExpression %prec UNARY
+    | primaryExpression
     ;
 
 unaryExpression:
@@ -276,12 +294,15 @@ unaryExpression:
         { $$ = UnaryExpressionSemanticAction($2, INCREMENT_OP, false); }
     | DECREMENT leftHandSideExpression
         { $$ = UnaryExpressionSemanticAction($2, DECREMENT_OP, false); }
-    | leftHandSideExpression INCREMENT
-        { $$ = UnaryExpressionSemanticAction($1, INCREMENT_OP, true); }
-    | leftHandSideExpression DECREMENT
-        { $$ = UnaryExpressionSemanticAction($1, DECREMENT_OP, true); }
-    | leftHandSideExpression %prec UNARY
-    | primaryExpression
+    | SUM unaryExpression %prec UNARY
+        { $$ = UnaryExpressionSemanticAction($2, UNARY_SUM_OP, false); }
+    | SUB  unaryExpression %prec UNARY
+        { $$ = UnaryExpressionSemanticAction($2, UNARY_SUB_OP, false); }
+    | LOGICAL_NOT unaryExpression %prec UNARY
+        { $$ = UnaryExpressionSemanticAction($2, LOGICAL_NOT_OP, false); }
+    | BITWISE_NOT unaryExpression %prec UNARY
+        { $$ = UnaryExpressionSemanticAction($2, BITWISE_NOT_OP, false); }
+    | postfixExpression
     ;
 
 leftHandSideExpression:

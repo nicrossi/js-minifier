@@ -96,8 +96,11 @@
 "-"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), SUB); }
 "+"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), SUM); }
 "*"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), MULTIPLICATION); }
+"**"                                { return PunctuationLexemeAction(createLexicalAnalyzerContext(), EXPONENTIATION); }
 "/"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), DIVISION); }
 "%"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), REMAINDER); }
+"!"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), LOGICAL_NOT); }
+"~"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), BITWISE_NOT); }
 
 [a-zA-Z_\\$][a-zA-Z0-9_\\$]*        { return IdentifierNameLexemeAction(createLexicalAnalyzerContext()); }
 

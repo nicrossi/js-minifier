@@ -39,6 +39,7 @@ typedef enum {
     DIVISION_EXPRESSION,
     EQUALITY_EXPRESSION,
     EMPTY_EXPRESSION,
+    EXPONENTIATION_EXPRESSION,
     GREATER_EXPRESSION,
     GREAT_EQUAL_EXPRESSION,
     IDENTIFIER,
@@ -49,6 +50,7 @@ typedef enum {
     MULTIPLICATION_EXPRESSION,
     POSTFIX_INCREMENT_EXPR, // expr++
     POSTFIX_DECREMENT_EXPR, // expr--
+    POWER_EXPRESSION,
     PREFIX_INCREMENT_EXPR,  // ++expr
     PREFIX_DECREMENT_EXPR,  // --expr
     REMAINDER_EXPRESSION,
@@ -71,8 +73,12 @@ typedef enum {
 } ForInitializerType;
 
 typedef enum {
-    INCREMENT_OP,
+    BITWISE_NOT_OP,
     DECREMENT_OP,
+    INCREMENT_OP,
+    LOGICAL_NOT_OP,
+    UNARY_SUM_OP,
+    UNARY_SUB_OP,
 } OperatorType;
 
 typedef enum {
