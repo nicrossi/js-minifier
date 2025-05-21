@@ -1,0 +1,29 @@
+// ------------------------------------------------------------
+// integration-strict-equality.js
+// ------------------------------------------------------------
+
+function foo(a = 1, b = 2, c = 3) {
+  // strict inequality
+  const x = a !== b;
+
+  // full if / else-if / else chain
+  if (a === 1) {
+    // plain inequality + comma expression in a lexical declaration
+    let y = b != c, z = x;
+  } else if (a == 0) {
+    const d = 0;
+  } else {
+    /* nothing */
+  }
+
+  // for-loop with lexical declaration and postfix increment
+  for (let i = 0; i < 10; i++) {
+    x++;        // postfix
+  }
+
+  // prefix update (just to hit that rule too)
+  --c;
+
+  return a + b + c + x;
+}
+let awesomeResult = foo(5, 10, 15);
