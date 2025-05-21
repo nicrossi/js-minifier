@@ -51,7 +51,7 @@ void releaseExpression(Expression * expression) { //NOLINT
     logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
     if (expression != NULL) {
         switch(expression->type) {
-            case ASSIGNMENT: case EQUALITY_EXPRESSION:
+        case ASSIGNMENT: case EQUALITY_EXPRESSION: case STRICT_EQUALITY_EXPRESSION:
             case SUB_EXPRESSION: case SUM_EXPRESSION:
             case MULTIPLICATION_EXPRESSION: case DIVISION_EXPRESSION:
             case GREAT_EQUAL_EXPRESSION: case LESS_EQUAL_EXPRESSION:
