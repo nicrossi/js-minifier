@@ -1,0 +1,4 @@
+const (foo) = "Invalid identifier";
+let (bar) = "Invalid identifier";
+const (a) = 1;
+let (b) = 2;
