@@ -128,7 +128,7 @@
 %nonassoc ELSE_KEYWORD
 
 // Dangling else, and empty statements. Default behavior is good enough.
-//%expect 2
+%expect 2
 %%
 // IMPORTANT: To use λ in the following grammar, use the %empty symbol.
 program:
@@ -171,10 +171,10 @@ functionDeclaration:
 parameterList:
     %empty
         { $$ = EmptyParameterListSemanticAction(); }
-    | parameterList COMMA IDENTIFIER_NAME
+    | variableDeclarator
+        { $$ = VariableDeclaratorListSemanticAction($1); }
+    | parameterList COMMA variableDeclarator
         { $$ = AppendParameterListSemanticAction($1, $3); }
-    | IDENTIFIER_NAME
-        { $$ = ParameterListSemanticAction($1); }
     ;
 
 variableDeclaratorList:

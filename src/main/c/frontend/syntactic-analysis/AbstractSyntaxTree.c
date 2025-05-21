@@ -15,17 +15,24 @@ void shutdownAbstractSyntaxTreeModule() {
 }
 
 /** PUBLIC FUNCTIONS */
-void releaseArgumentList(ArgumentList * list) {
+void releaseArgument(Argument * argument) { //NOLINT
+    logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (argument == NULL) return;
+    releaseExpression(argument->expression);
+    free(argument);
+    argument = NULL;
+}
+void releaseArgumentList(ArgumentList * list) { //NOLINT
     logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
     if (list == NULL) return;
-
     Argument * current = list->head;
     while (current != NULL) {
         Argument * next = current->next;
-        releaseExpression(current->expression);
-        free(current);
+        releaseArgument(current);
         current = next;
     }
+    free(list);
+    list = NULL;
 }
 void releaseDeclaration(Declaration * declaration) { //NOLINT
     logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
@@ -58,12 +65,22 @@ void releaseExpression(Expression * expression) { //NOLINT
             case PREFIX_DECREMENT_EXPR:  case POSTFIX_INCREMENT_EXPR:
                 releaseUpdateOp(expression->updateOp);
                 break;
+            case CALL_EXPRESSION: releaseCallExpression(expression->callExpression); break;
             default:
                 logWarning(_logger, "Unknown expression type: %d", expression->type);
         }
         free(expression);
         expression = NULL;
     }
+}
+
+void releaseCallExpression(CallExpression * callExpression) { //NOLINT
+    logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (callExpression == NULL) return;
+    releaseExpression(callExpression->callee);
+    releaseArgumentList(callExpression->argumentList);
+    free(callExpression);
+    callExpression = NULL;
 }
 
 void releaseFunctionDeclaration(FunctionDeclaration * functionDeclaration) { //NOLINT

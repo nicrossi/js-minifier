@@ -53,16 +53,11 @@ ArgumentList * AppendArgumentListSemanticAction(ArgumentList * argumentList, Exp
 }
 
 VariableDeclaratorList * AppendParameterListSemanticAction(VariableDeclaratorList * list,
-                                                           const char * parameter) {
+                                                           VariableDeclarator * parameter) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     assert(list->head != NULL);
-    VariableDeclarator * paramItem = ecalloc(1, sizeof(VariableDeclarator));
-    paramItem->identifier = strdup(parameter);
-    paramItem->initializer = NULL;
-    paramItem->next = NULL;
-    free((char *) parameter);
-    list->tail->next = paramItem;
-    list->tail = paramItem;
+    list->tail->next = parameter;
+    list->tail = parameter;
     return list;
 }
 

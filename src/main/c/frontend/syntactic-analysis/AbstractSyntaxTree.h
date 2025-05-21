@@ -205,7 +205,9 @@ struct Program {
 /**
  * Node recursive destructors.
  */
+void releaseArgument(Argument * argument);
 void releaseArgumentList(ArgumentList * argumentList);
+void releaseCallExpression(CallExpression * callExpression);
 void releaseDeclaration(Declaration * declaration);
 void releaseExpression(Expression * expression);
 void releaseFunctionDeclaration(FunctionDeclaration * functionDeclaration);

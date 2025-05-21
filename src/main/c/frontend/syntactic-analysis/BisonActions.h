@@ -20,7 +20,7 @@ void shutdownBisonActionsModule();
  */
 VariableDeclaratorList * AppendVariableDeclaratorListSemanticAction(VariableDeclaratorList * list, VariableDeclarator * variableDeclarator);
 ArgumentList * AppendArgumentListSemanticAction(ArgumentList * argumentList, Expression * argument);
-VariableDeclaratorList * AppendParameterListSemanticAction(VariableDeclaratorList * list, const char * parameter);
+VariableDeclaratorList * AppendParameterListSemanticAction(VariableDeclaratorList * list, VariableDeclarator * parameter);
 ArgumentList * ArgumentListSemanticAction(Expression * argument);
 Expression * AssignmentExpressionSemanticAction(Expression * left, Expression * right);
 StatementList * BlockSemanticAction(StatementList * statementList);
