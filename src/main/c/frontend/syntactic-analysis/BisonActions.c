@@ -55,6 +55,13 @@ StatementList * BlockSemanticAction(StatementList * statementList) {
     return statementList;
 }
 
+Statement * BreakStatementSemanticAction() {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Statement * statement = ecalloc(1, sizeof(Statement));
+    statement->type = BREAK_STATEMENT;
+    return statement;
+}
+
 Statement * BlockStatementSemanticAction(StatementList * statementList) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     Statement * statement = ecalloc(1, sizeof(Statement));
@@ -80,6 +87,13 @@ Expression * CommaExpressionSemanticAction(Expression * expression, Expression *
     newExpression->binaryExpression.leftExpression = expression;
     newExpression->binaryExpression.rightExpression = assignmentExpression;
     return newExpression;
+}
+
+Statement * ContinueStatementSemanticAction() {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Statement * statement = ecalloc(1, sizeof(Statement));
+    statement->type = CONTINUE_STATEMENT;
+    return statement;
 }
 
 LexicalDeclaration * CreateLexicalDeclarationSemanticAction(LexicalDeclarationType type, VariableDeclaratorList * variableDeclaratorList) {

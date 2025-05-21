@@ -54,6 +54,8 @@
 %token <string> IDENTIFIER_NAME
 %token <string> STRING_LITERAL
 
+%token <token> BREAK_KEYWORD
+%token <token> CONTINUE_KEYWORD
 %token <token> CLOSE_CURLY_BRACE
 %token <token> CLOSE_PARENTHESIS
 %token <token> COMMA
@@ -171,6 +173,10 @@ statement:
         { $$ = BlockStatementSemanticAction($1); }
     | expression SEMICOLON // Optional semicolon was making my life difficult, so it's gone. For now...
         { $$ = ExpressionStatementSemanticAction($1); }
+    | BREAK_KEYWORD SEMICOLON
+        { $$ = BreakStatementSemanticAction(); }
+    |  CONTINUE_KEYWORD SEMICOLON
+        { $$ = ContinueStatementSemanticAction(); }
     | ifStatement
         { $$ = IfStatementSemanticAction($1); }
     | forStatement

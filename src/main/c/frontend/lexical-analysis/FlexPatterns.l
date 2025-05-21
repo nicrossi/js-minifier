@@ -71,6 +71,8 @@
 "if"                                { return KeywordLexemeAction(createLexicalAnalyzerContext(), IF_KEYWORD); }
 "else"                              { return KeywordLexemeAction(createLexicalAnalyzerContext(), ELSE_KEYWORD); }
 "for"                               { return KeywordLexemeAction(createLexicalAnalyzerContext(), FOR_KEYWORD); }
+"break"                             { return KeywordLexemeAction(createLexicalAnalyzerContext(), BREAK_KEYWORD); }
+"continue"                          { return KeywordLexemeAction(createLexicalAnalyzerContext(), CONTINUE_KEYWORD); }
 
 "="                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), EQUAL); }
 "=="                                { return PunctuationLexemeAction(createLexicalAnalyzerContext(), EQUALITY); }
