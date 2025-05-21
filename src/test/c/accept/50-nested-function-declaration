@@ -1,0 +1,7 @@
+function outer() {
+    function inner() {
+        const x = 1;
+        return x;
+    }
+    return inner();
+}
