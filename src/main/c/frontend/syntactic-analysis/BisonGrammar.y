@@ -66,8 +66,8 @@
 %token <token> DIVISION
 %token <token> ELSE_KEYWORD
 %token <token> EQUAL
-%token <token> EQUALITY
-%token <token> STRICT_EQUALITY
+%token <token> EQUALITY INEQUALITY
+%token <token> STRICT_EQUALITY STRICT_INEQUALITY
 %token <token> FOR_KEYWORD
 %token <token> FUNCTION_KEYWORD
 %token <token> GREATER GREAT_EQUAL
@@ -118,7 +118,7 @@
  * @see https://www.gnu.org/software/bison/manual/html_node/Precedence.html
  */
 %right EQUAL
-%left  EQUALITY STRICT_EQUALITY
+%left  EQUALITY STRICT_EQUALITY INEQUALITY STRICT_INEQUALITY
 %left  LESS_EQUAL GREAT_EQUAL
 %left  SUM SUB
 %left  MULTIPLICATION
@@ -233,6 +233,10 @@ equalityExpression:
         { $$ = BinaryExpressionSemanticAction($1, $3, EQUALITY_EXPRESSION); }
     | equalityExpression STRICT_EQUALITY additiveExpression
         { $$ = BinaryExpressionSemanticAction($1, $3, STRICT_EQUALITY_EXPRESSION); }
+    | equalityExpression INEQUALITY additiveExpression
+        { $$ = BinaryExpressionSemanticAction($1, $3, INEQUALITY_EXPRESSION); }
+    | equalityExpression  STRICT_INEQUALITY additiveExpression
+        { $$ = BinaryExpressionSemanticAction($1, $3, STRICT_INEQUALITY_EXPRESSION); }
     | relationalExpression
     ;
 

@@ -78,7 +78,9 @@
 
 "="                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), EQUAL); }
 "=="                                { return PunctuationLexemeAction(createLexicalAnalyzerContext(), EQUALITY); }
+"!="                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), INEQUALITY); }
 "==="                               { return PunctuationLexemeAction(createLexicalAnalyzerContext(), STRICT_EQUALITY); }
+"!=="                               { return PunctuationLexemeAction(createLexicalAnalyzerContext(), STRICT_INEQUALITY); }
 ";"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), SEMICOLON); }
 ","                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), COMMA); }
 "("                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), OPEN_PARENTHESIS); }
