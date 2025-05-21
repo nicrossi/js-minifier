@@ -213,8 +213,6 @@ optionalSemicolon: SEMICOLON | %empty ;
 block:
     OPEN_CURLY_BRACE statementList CLOSE_CURLY_BRACE
         { $$ = BlockSemanticAction($2); }
-    | OPEN_CURLY_BRACE CLOSE_CURLY_BRACE
-        { $$ = EmptyBlockSemanticAction(); }
     ;
 
 expression:
