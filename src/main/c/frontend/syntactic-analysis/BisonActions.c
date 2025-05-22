@@ -183,9 +183,24 @@ LexicalDeclaration * CreateLexicalDeclarationSemanticAction(LexicalDeclarationTy
     return lexicalDeclaration;
 }
 
-StatementListItem * DeclarationStatementListItemSemanticAction(Declaration * declaration) {
+StatementListItem * LexicalDeclarationStatementListItemSemanticAction(LexicalDeclaration * d) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     StatementListItem * item = ecalloc(1, sizeof(StatementListItem));
+    Declaration * declaration = ecalloc(1, sizeof(Declaration));
+    declaration->type = LEXICAL;
+    declaration->lexicalDeclaration = d;
+    item->declaration = declaration;
+    item->type = DECLARATION_STATEMENT;
+    item->next = NULL;
+    return item;
+}
+
+StatementListItem * FunctionDeclarationStatementListItemSemanticAction(FunctionDeclaration * d) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    StatementListItem * item = ecalloc(1, sizeof(StatementListItem));
+    Declaration * declaration = ecalloc(1, sizeof(Declaration));
+    declaration->type = FUNCTION;
+    declaration->functionDeclaration = d;
     item->declaration = declaration;
     item->type = DECLARATION_STATEMENT;
     item->next = NULL;

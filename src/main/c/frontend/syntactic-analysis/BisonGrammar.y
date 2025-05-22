@@ -42,7 +42,6 @@
  *
  * @see https://www.gnu.org/software/bison/manual/html_node/Destructor-Decl.html
  */
-%destructor { releaseDeclaration($$); } <declaration>
 %destructor { releaseExpression($$); } <expression>
 %destructor { releaseForInitializer($$); } <forStatementInit>
 %destructor { releaseForStatement($$); } <forStatement>
@@ -104,7 +103,6 @@
 %type <argumentList> argumentList elementList
 %type <expression> assignmentExpression
 %type <statementList> block
-%type <declaration> declaration
 %type <expression> expression
 %type <expression> arrayLiteral
 %type <expression> equalityExpression
@@ -170,22 +168,18 @@ statementList:
     ;
 
 statementListItem:
-    declaration
-        { $$ = DeclarationStatementListItemSemanticAction($1); }
+    lexicalDeclaration SEMICOLON
+        { $$ = LexicalDeclarationStatementListItemSemanticAction($1); }
+    | functionDeclaration
+        { $$ = FunctionDeclarationStatementListItemSemanticAction($1); }
     | statement
         { $$ = StatementStatementListItemSemanticAction($1); }
     ;
-declaration:
-    lexicalDeclaration
-        { $$ = LexicalDeclarationSemanticAction($1); }
-    | functionDeclaration
-        { $$ = FunctionDeclarationSemanticAction($1); }
-    ;
 
 lexicalDeclaration:
-    CONST_KEYWORD variableDeclaratorList optionalSemicolon
+    CONST_KEYWORD variableDeclaratorList
         { $$ = CreateLexicalDeclarationSemanticAction(CONST_DECLARATION, $2); }
-    | LET_KEYWORD variableDeclaratorList optionalSemicolon
+    | LET_KEYWORD variableDeclaratorList
         { $$ = CreateLexicalDeclarationSemanticAction(LET_DECLARATION, $2); }
     ;
 
@@ -262,8 +256,6 @@ finallyClause:
     FINALLY_KEYWORD block
         { $$ = FinallyClauseSemanticAction($2); }
     ;
-
-optionalSemicolon: SEMICOLON | %empty ;
 
 block:
     OPEN_CURLY_BRACE statementList CLOSE_CURLY_BRACE

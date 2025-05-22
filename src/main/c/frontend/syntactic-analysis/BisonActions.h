@@ -78,4 +78,6 @@ Statement * WhileStatementSemanticAction(WhileStatement * ws);
 Expression * MemberExpressionSemanticAction(Expression *base, const char *id);
 Expression * SubscriptExpressionSemanticAction(Expression *base, Expression *index);
 Expression * ArrayLiteralSemanticAction(ArgumentList *elements);
+StatementListItem * FunctionDeclarationStatementListItemSemanticAction(FunctionDeclaration * d);
+StatementListItem * LexicalDeclarationStatementListItemSemanticAction(LexicalDeclaration * d);
 #endif
