@@ -70,6 +70,7 @@ void releaseExpression(Expression * expression) { //NOLINT
             case GREAT_EQUAL_EXPRESSION: case LESS_EQUAL_EXPRESSION:
             case GREATER_EXPRESSION: case LESS_EXPRESSION: case EXPONENTIATION_EXPRESSION:
             case MEMBER_EXPRESSION: case SUBSCRIPT_EXPRESSION:
+            case LOGICAL_OR_EXPRESSION:  case LOGICAL_AND_EXPRESSION:
                 releaseExpression(expression->binaryExpression.leftExpression);
                 releaseExpression(expression->binaryExpression.rightExpression);
                 break;
