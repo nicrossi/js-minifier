@@ -23,6 +23,7 @@ typedef struct Program Program;
 typedef struct Statement Statement;
 typedef struct StatementList StatementList;
 typedef struct StatementListItem StatementListItem;
+typedef struct TryStatement TryStatement;
 typedef struct UpdateOp UpdateOp;
 typedef struct VariableDeclarator VariableDeclarator;
 typedef struct VariableDeclaratorList VariableDeclaratorList;
@@ -90,6 +91,7 @@ typedef enum {
     FOR_STATEMENT,
     IF_STATEMENT,
     RETURN_STATEMENT,
+    TRY_STATEMENT,
 } StatementType;
 
 /**
@@ -123,6 +125,12 @@ typedef struct {
     ArgumentList * argumentList;
 } CallExpression;
 
+typedef struct {
+    /* NULL ⇒ `catch { … }` (parameter-less catch – ES2019) */
+    char * identifier;
+    StatementList * block;
+} CatchClause;
+
 struct Expression {
     ExpressionType type;
     union {
@@ -134,6 +142,10 @@ struct Expression {
         int value;
     };
 };
+
+typedef struct {
+    StatementList * block;
+} FinallyClause;
 
 typedef struct {
     ForInitializerType type;
@@ -174,6 +186,7 @@ struct Statement {
         StatementList * block;
         IfStatement * ifStatement;
         ForStatement * forStatement;
+        TryStatement * tryStatement;
     };
 };
 
@@ -189,6 +202,12 @@ struct StatementListItem {
     };
     StatementListItem * next;
     StatementType type;
+};
+
+struct TryStatement {
+    StatementList * tryBlock;
+    CatchClause * catchClause;
+    FinallyClause * finallyClause;
 };
 
 struct UpdateOp {
@@ -218,8 +237,10 @@ struct Program {
 void releaseArgument(Argument * argument);
 void releaseArgumentList(ArgumentList * argumentList);
 void releaseCallExpression(CallExpression * callExpression);
+void releaseCatchClause(CatchClause * catchClause);
 void releaseDeclaration(Declaration * declaration);
 void releaseExpression(Expression * expression);
+void releaseFinallyClause(FinallyClause * finallyClause);
 void releaseFunctionDeclaration(FunctionDeclaration * functionDeclaration);
 void releaseForInitializer(ForInitializer * forInitializer);
 void releaseForStatement(ForStatement * forStatement);
@@ -230,6 +251,7 @@ void releaseStatement(Statement * statement);
 void releaseStatementList(StatementList * statementList);
 void releaseString(char * string);
 void releaseStatementListItem(StatementListItem * statementListItem);
+void releaseTryStatement(TryStatement * tryStatement);
 void releaseUpdateOp(UpdateOp * updateOp);
 void releaseVariableDeclarator(VariableDeclarator * variableDeclarator);
 void releaseVariableDeclaratorList(VariableDeclaratorList * variableDeclaratorList);

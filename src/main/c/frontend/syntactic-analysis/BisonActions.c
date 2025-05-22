@@ -24,6 +24,31 @@ extern unsigned int flexCurrentContext(void);
 static void _logSyntacticAnalyzerAction(const char * functionName);
 void checkInitializer(VariableDeclaratorList * list);
 
+static CatchClause * _newCatchClause(const char * id, StatementList * blk) {
+    CatchClause * c = ecalloc(1, sizeof(CatchClause));
+    c->identifier = id ? strdup(id) : NULL;
+    c->block = blk;
+    if (id) {
+        free((char*)id);
+    }
+    return c;
+}
+
+static FinallyClause * _newFinallyClause(StatementList * blk) {
+    FinallyClause * f = ecalloc(1, sizeof(FinallyClause));
+    f->block = blk;
+    return f;
+}
+
+static TryStatement * _newTryStatement(StatementList * tryBlk, CatchClause * catchCl,
+                                       FinallyClause * finCl) {
+    TryStatement * t = ecalloc(1, sizeof(TryStatement));
+    t->tryBlock = tryBlk;
+    t->catchClause = catchCl;
+    t->finallyClause = finCl;
+    return t;
+}
+
 /**
  * Logs a syntactic-analyzer action in DEBUGGING level.
  */
@@ -109,6 +134,16 @@ Expression * CallExpressionSemanticAction(Expression * callee, ArgumentList * ar
     call->argumentList = argumentList;
     expression->callExpression = call;
     return expression;
+}
+
+CatchClause * CatchClauseSemanticAction(const char * identifier, StatementList * block) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    return _newCatchClause(identifier, block);
+}
+
+CatchClause * CatchClauseNoParamSemanticAction(StatementList * catchBlock) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    return _newCatchClause(NULL, catchBlock);
 }
 
 Expression * ChainedAssignmentSemanticAction(Expression * left, Expression * right) {
@@ -385,6 +420,35 @@ Expression * StringExpressionSemanticAction(const char * s) {
     expression->string = strdup(s);
     free((char *) s);
     return expression;
+}
+
+FinallyClause * FinallyClauseSemanticAction(StatementList * finallyBlock) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    return _newFinallyClause(finallyBlock);
+}
+
+TryStatement * TryCatchSemanticAction(StatementList * tryBlock, CatchClause * catchClause) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    return _newTryStatement(tryBlock, catchClause, NULL);
+}
+
+TryStatement * TryFinallySemanticAction(StatementList * tryBlock, FinallyClause * finallyClause) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    return _newTryStatement(tryBlock, NULL, finallyClause);
+}
+
+TryStatement * TryCatchFinallySemanticAction(StatementList * tryBlock, CatchClause * catchClause,
+                                             FinallyClause * finallyClause) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    return _newTryStatement(tryBlock, catchClause, finallyClause);
+}
+
+Statement * TryStatementSemanticAction(TryStatement * tryStatement) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Statement * statement = ecalloc(1, sizeof(Statement));
+    statement->type = TRY_STATEMENT;
+    statement->tryStatement = tryStatement;
+    return statement;
 }
 
 Expression * UnaryExpressionSemanticAction(Expression * operand, OperatorType opType, bool isPostfix) {

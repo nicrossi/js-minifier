@@ -1,0 +1,10 @@
+function test(a = 1) {
+  try {
+    let z = a / 0;
+  } catch (e) {
+    z = 42;
+  }
+  return z;
+}
+
+const result = test();

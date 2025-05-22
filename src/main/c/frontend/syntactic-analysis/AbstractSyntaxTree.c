@@ -47,6 +47,18 @@ void releaseDeclaration(Declaration * declaration) { //NOLINT
     declaration = NULL;
 }
 
+
+void releaseCatchClause(CatchClause * clause) { // NOLINT
+    logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (clause == NULL) return;
+
+    if (clause->identifier != NULL)
+        free(clause->identifier);
+    releaseStatementList(clause->block);
+    free(clause);
+    clause = NULL;
+}
+
 void releaseExpression(Expression * expression) { //NOLINT
     logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
     if (expression != NULL) {
@@ -83,6 +95,16 @@ void releaseCallExpression(CallExpression * callExpression) { //NOLINT
     free(callExpression);
     callExpression = NULL;
 }
+
+void releaseFinallyClause(FinallyClause * clause) { // NOLINT
+    logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (clause == NULL) return;
+
+    releaseStatementList(clause->block);
+    free(clause);
+    clause = NULL;
+}
+
 
 void releaseFunctionDeclaration(FunctionDeclaration * functionDeclaration) { //NOLINT
     if (functionDeclaration == NULL) return;
@@ -147,6 +169,7 @@ void releaseStatement(Statement * statement) { //NOLINT
             case BLOCK_STATEMENT:      releaseStatementList(statement->block); break;
             case FOR_STATEMENT:        releaseForStatement(statement->forStatement); break;
             case RETURN_STATEMENT:     releaseExpression(statement->expression); break;
+            case TRY_STATEMENT:       releaseTryStatement(statement->tryStatement); break;
             default:
                 logWarning(_logger, "Unknown statement type: %d", statement->type);
         }
@@ -185,6 +208,17 @@ void releaseString(char * string) {
     logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
     free(string);
     string = NULL;
+}
+
+void releaseTryStatement(TryStatement * ts) { // NOLINT
+    logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (ts == NULL) return;
+
+    releaseStatementList(ts->tryBlock);
+    releaseCatchClause  (ts->catchClause);
+    releaseFinallyClause(ts->finallyClause);
+    free(ts);
+    ts = NULL;
 }
 
 void releaseUpdateOp(UpdateOp * updateOp) {

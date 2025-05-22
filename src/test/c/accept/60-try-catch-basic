@@ -1,0 +1,6 @@
+try {
+  const a = 1;
+  const b = a + 1;
+} catch (e) {
+  const msg = "something went wrong";
+}

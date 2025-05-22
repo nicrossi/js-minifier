@@ -1,0 +1,7 @@
+if (1 == 1) {
+  try {
+    const y = 2 ** 3;
+  } catch (e) {
+    let y = 0;
+  }
+}

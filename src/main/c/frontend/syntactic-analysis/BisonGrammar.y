@@ -26,6 +26,9 @@
 	Statement * statement;
     StatementList * statementList;
     StatementListItem * statementListItem;
+    TryStatement * tryStatement;
+    CatchClause * catchClause;
+    FinallyClause * finallyClause;
     VariableDeclarator * variableDeclarator;
     VariableDeclaratorList * variableDeclaratorList;
 }
@@ -57,6 +60,7 @@
 %token <string> STRING_LITERAL
 
 %token <token> BREAK_KEYWORD
+%token <token> CATCH_KEYWORD
 %token <token> CONTINUE_KEYWORD
 %token <token> CLOSE_CURLY_BRACE
 %token <token> CLOSE_PARENTHESIS
@@ -68,6 +72,7 @@
 %token <token> EQUAL
 %token <token> EQUALITY INEQUALITY
 %token <token> STRICT_EQUALITY STRICT_INEQUALITY
+%token <token> FINALLY_KEYWORD
 %token <token> FOR_KEYWORD
 %token <token> FUNCTION_KEYWORD
 %token <token> GREATER GREAT_EQUAL
@@ -77,8 +82,11 @@
 %token <token> LESS LESS_EQUAL
 %token <token> LOGICAL_NOT BITWISE_NOT
 %token <token> MULTIPLICATION EXPONENTIATION
+%token <token> NEW_KEYWORD
 %token <token> OPEN_CURLY_BRACE
 %token <token> OPEN_PARENTHESIS
+%token <token> THROW_KEYWORD
+%token <token> TRY_KEYWORD
 %token <token> REMAINDER
 %token <token> RETURN_KEYWORD
 %token <token> SEMICOLON
@@ -111,6 +119,9 @@
 %type <statement> statement
 %type <statementList> statementList
 %type <statementListItem> statementListItem
+%type <tryStatement> tryStatement
+%type <catchClause> catchClause
+%type <finallyClause> finallyClause
 %type <expression> unaryExpression
 %type <variableDeclarator> variableDeclarator
 %type <variableDeclaratorList> variableDeclaratorList
@@ -211,6 +222,29 @@ statement:
         { $$ = IfStatementSemanticAction($1); }
     | forStatement
         { $$ = ForStatementSemanticAction($1); }
+    | tryStatement
+        { $$ = TryStatementSemanticAction($1); }
+    ;
+
+tryStatement:
+    TRY_KEYWORD block catchClause
+        { $$ = TryCatchSemanticAction($2, $3); }
+    | TRY_KEYWORD block finallyClause
+        { $$ = TryFinallySemanticAction($2, $3); }
+    | TRY_KEYWORD block catchClause finallyClause
+        { $$ = TryCatchFinallySemanticAction($2, $3, $4); }
+    ;
+
+catchClause:
+    CATCH_KEYWORD OPEN_PARENTHESIS IDENTIFIER_NAME CLOSE_PARENTHESIS block
+        { $$ = CatchClauseSemanticAction($3, $5); }
+    | CATCH_KEYWORD block      // parameter-less catch – ES2019
+        { $$ = CatchClauseSemanticAction(NULL, $2); }
+    ;
+
+finallyClause:
+    FINALLY_KEYWORD block
+        { $$ = FinallyClauseSemanticAction($2); }
     ;
 
 optionalSemicolon: SEMICOLON | %empty ;
