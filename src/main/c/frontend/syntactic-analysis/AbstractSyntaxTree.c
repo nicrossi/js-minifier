@@ -69,6 +69,7 @@ void releaseExpression(Expression * expression) { //NOLINT
             case MULTIPLICATION_EXPRESSION: case DIVISION_EXPRESSION: case REMAINDER_EXPRESSION:
             case GREAT_EQUAL_EXPRESSION: case LESS_EQUAL_EXPRESSION:
             case GREATER_EXPRESSION: case LESS_EXPRESSION: case EXPONENTIATION_EXPRESSION:
+            case MEMBER_EXPRESSION: case SUBSCRIPT_EXPRESSION:
                 releaseExpression(expression->binaryExpression.leftExpression);
                 releaseExpression(expression->binaryExpression.rightExpression);
                 break;
@@ -80,6 +81,13 @@ void releaseExpression(Expression * expression) { //NOLINT
                 break;
             case CALL_EXPRESSION: case NEW_EXPRESSION:
                 releaseCallExpression(expression->callExpression); break;
+            case ARRAY_LITERAL_EXPRESSION:
+                if (expression->callExpression != NULL) {
+                    releaseArgumentList(expression->callExpression->argumentList);
+                    free(expression->callExpression);
+                    expression->callExpression = NULL;
+                }
+                break;
             default:
                 logWarning(_logger, "Unknown expression type: %d", expression->type);
         }

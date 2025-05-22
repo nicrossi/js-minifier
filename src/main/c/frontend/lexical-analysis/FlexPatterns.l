@@ -94,6 +94,9 @@
 ")"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), CLOSE_PARENTHESIS); }
 "{"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), OPEN_CURLY_BRACE); }
 "}"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), CLOSE_CURLY_BRACE); }
+"["                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), OPEN_SQUARE_BRACKET); }
+"]"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), CLOSE_SQUARE_BRACKET); }
+"."                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), DOT); }
 "++"                                { return PunctuationLexemeAction(createLexicalAnalyzerContext(), INCREMENT); }
 "--"                                { return PunctuationLexemeAction(createLexicalAnalyzerContext(), DECREMENT); }
 ">="                                { return PunctuationLexemeAction(createLexicalAnalyzerContext(), GREAT_EQUAL); }

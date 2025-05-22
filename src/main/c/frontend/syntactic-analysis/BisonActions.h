@@ -75,4 +75,7 @@ VariableDeclaratorList * VariableDeclaratorListSemanticAction(VariableDeclarator
 VariableDeclarator * VariableDeclaratorSemanticAction(const char * identifier, Expression * initializer);
 WhileStatement * WhileSemanticAction(Expression * cond, Statement * body);
 Statement * WhileStatementSemanticAction(WhileStatement * ws);
+Expression * MemberExpressionSemanticAction(Expression *base, const char *id);
+Expression * SubscriptExpressionSemanticAction(Expression *base, Expression *index);
+Expression * ArrayLiteralSemanticAction(ArgumentList *elements);
 #endif

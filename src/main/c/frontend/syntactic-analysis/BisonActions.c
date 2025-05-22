@@ -530,6 +530,28 @@ Statement * WhileStatementSemanticAction(WhileStatement * ws) {
     return statement;
 }
 
+Expression * MemberExpressionSemanticAction(Expression * base, const char * identifier) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Expression * idExpr = IdentifierExpressionSemanticAction(identifier);
+    return BinaryExpressionSemanticAction(base,idExpr, MEMBER_EXPRESSION);
+}
+
+Expression * SubscriptExpressionSemanticAction(Expression * base, Expression * index) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    return BinaryExpressionSemanticAction(base,index,SUBSCRIPT_EXPRESSION);
+}
+
+Expression * ArrayLiteralSemanticAction(ArgumentList * elements) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Expression * expr = ecalloc(1, sizeof(Expression));
+    expr->type = ARRAY_LITERAL_EXPRESSION;
+    CallExpression * pseudo = ecalloc(1, sizeof(CallExpression));
+    pseudo->callee = NULL;
+    pseudo->argumentList = elements;
+    expr->callExpression = pseudo;
+    return expr;
+}
+
 void checkInitializer(VariableDeclaratorList * list) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     for (VariableDeclarator  * vd = list->head; vd != NULL; vd = vd->next) {

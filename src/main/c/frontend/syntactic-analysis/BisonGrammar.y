@@ -97,14 +97,16 @@
 %token <token> SUM
 %token <token> UNKNOWN
 %token <token> WHILE_KEYWORD
+%token <token> DOT OPEN_SQUARE_BRACKET CLOSE_SQUARE_BRACKET
 
 /** Non-terminals. */
 %type <expression> additiveExpression
-%type <argumentList> argumentList
+%type <argumentList> argumentList elementList
 %type <expression> assignmentExpression
 %type <statementList> block
 %type <declaration> declaration
 %type <expression> expression
+%type <expression> arrayLiteral
 %type <expression> equalityExpression
 %type <forStatementInit> forStatementInit
 %type <forStatement> forStatement
@@ -143,6 +145,9 @@
 %left  MULTIPLICATION DIVISION REMAINDER
 %precedence UNARY
 %right EXPONENTIATION
+%left  DOT
+%left OPEN_BRACKET CLOSE_BRACKET
+%right  NEW_PREC
 %precedence POSTFIX_UPDATE
 %left  INCREMENT DECREMENT
 %nonassoc IF_WITHOUT_ELSE
@@ -326,7 +331,11 @@ multiplicativeExpression:
     ;
 
 postfixExpression:
-    NEW_KEYWORD postfixExpression
+    postfixExpression DOT IDENTIFIER_NAME
+        { $$ = MemberExpressionSemanticAction($1, $3); }
+    | postfixExpression OPEN_BRACKET expression CLOSE_BRACKET
+        { $$ = SubscriptExpressionSemanticAction($1, $3); }
+    | NEW_KEYWORD postfixExpression
         { $$ = NewExpressionSemanticAction($2, NULL); }
     | NEW_KEYWORD postfixExpression OPEN_PARENTHESIS argumentList CLOSE_PARENTHESIS
         { $$ = NewExpressionSemanticAction($2, $4); }
@@ -357,6 +366,10 @@ unaryExpression:
 leftHandSideExpression:
     IDENTIFIER_NAME
         { $$ = IdentifierExpressionSemanticAction($1); }
+    | leftHandSideExpression DOT IDENTIFIER_NAME
+        { $$ = MemberExpressionSemanticAction($1, $3); }
+    | leftHandSideExpression OPEN_BRACKET expression CLOSE_BRACKET
+        { $$ = SubscriptExpressionSemanticAction($1, $3); }
     ;
 
 primaryExpression:
@@ -364,10 +377,25 @@ primaryExpression:
         { $$ = IntegerExpressionSemanticAction($1); }
     | STRING_LITERAL
         { $$ = StringExpressionSemanticAction($1); }
+    | arrayLiteral
     | leftHandSideExpression OPEN_PARENTHESIS  argumentList CLOSE_PARENTHESIS
         { $$ = CallExpressionSemanticAction($1, $3); }
     | OPEN_PARENTHESIS expression CLOSE_PARENTHESIS
         { $$ = ParenthesisExpressionSemanticAction($2); }
+    ;
+
+arrayLiteral:
+    OPEN_BRACKET elementList CLOSE_BRACKET
+        { $$ = ArrayLiteralSemanticAction($2); }
+    ;
+
+elementList:
+    %empty
+        { $$ = EmptyArgumentListSemanticAction(); }
+    | assignmentExpression
+        { $$ = ArgumentListSemanticAction($1); }
+    | elementList COMMA assignmentExpression
+        { $$ = AppendArgumentListSemanticAction($1, $3); }
     ;
 
 argumentList:
