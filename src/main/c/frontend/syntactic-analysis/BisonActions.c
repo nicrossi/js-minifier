@@ -105,6 +105,15 @@ Expression * AssignmentExpressionSemanticAction(Expression * left, Expression * 
     return expression;
 }
 
+Expression * BooleanExpressionSemanticAction(bool v) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Expression *e = ecalloc(1, sizeof(Expression));
+    e->type = BOOLEAN_LITERAL_EXPRESSION;
+    e->value = v;
+    return e;
+}
+
+
 StatementList * BlockSemanticAction(StatementList * statementList) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     return statementList;

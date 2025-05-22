@@ -97,6 +97,7 @@
 %token <token> UNKNOWN
 %token <token> WHILE_KEYWORD
 %token <token> DOT OPEN_SQUARE_BRACKET CLOSE_SQUARE_BRACKET
+%token <token> TRUE_LITERAL FALSE_LITERAL
 
 /** Non-terminals. */
 %type <expression> additiveExpression
@@ -327,9 +328,9 @@ postfixExpression:
         { $$ = MemberExpressionSemanticAction($1, $3); }
     | postfixExpression OPEN_SQUARE_BRACKET expression CLOSE_SQUARE_BRACKET
         { $$ = SubscriptExpressionSemanticAction($1, $3); }
-    | NEW_KEYWORD postfixExpression %prec NEW_PREC
+    | NEW_KEYWORD leftHandSideExpression %prec NEW_PREC
         { $$ = NewExpressionSemanticAction($2, NULL); }
-    | NEW_KEYWORD postfixExpression OPEN_PARENTHESIS argumentList CLOSE_PARENTHESIS
+    | NEW_KEYWORD leftHandSideExpression OPEN_PARENTHESIS argumentList CLOSE_PARENTHESIS
         { $$ = NewExpressionSemanticAction($2, $4); }
     | leftHandSideExpression INCREMENT
         { $$ = UnaryExpressionSemanticAction($1, INCREMENT_OP, true); }
@@ -369,6 +370,10 @@ primaryExpression:
         { $$ = IntegerExpressionSemanticAction($1); }
     | STRING_LITERAL
         { $$ = StringExpressionSemanticAction($1); }
+    | TRUE_LITERAL
+        { $$ = BooleanExpressionSemanticAction(true); }
+    | FALSE_LITERAL
+        { $$ = BooleanExpressionSemanticAction(false); }
     | arrayLiteral
     | leftHandSideExpression OPEN_PARENTHESIS  argumentList CLOSE_PARENTHESIS
         { $$ = CallExpressionSemanticAction($1, $3); }
