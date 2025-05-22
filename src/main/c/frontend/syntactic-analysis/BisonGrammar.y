@@ -327,7 +327,7 @@ postfixExpression:
         { $$ = MemberExpressionSemanticAction($1, $3); }
     | postfixExpression OPEN_SQUARE_BRACKET expression CLOSE_SQUARE_BRACKET
         { $$ = SubscriptExpressionSemanticAction($1, $3); }
-    | NEW_KEYWORD postfixExpression
+    | NEW_KEYWORD postfixExpression %prec NEW_PREC
         { $$ = NewExpressionSemanticAction($2, NULL); }
     | NEW_KEYWORD postfixExpression OPEN_PARENTHESIS argumentList CLOSE_PARENTHESIS
         { $$ = NewExpressionSemanticAction($2, $4); }
