@@ -146,7 +146,7 @@
 %precedence UNARY
 %right EXPONENTIATION
 %left  DOT
-%left OPEN_BRACKET CLOSE_BRACKET
+%left OPEN_SQUARE_BRACKET CLOSE_SQUARE_BRACKET
 %right  NEW_PREC
 %precedence POSTFIX_UPDATE
 %left  INCREMENT DECREMENT
@@ -333,7 +333,7 @@ multiplicativeExpression:
 postfixExpression:
     postfixExpression DOT IDENTIFIER_NAME
         { $$ = MemberExpressionSemanticAction($1, $3); }
-    | postfixExpression OPEN_BRACKET expression CLOSE_BRACKET
+    | postfixExpression OPEN_SQUARE_BRACKET expression CLOSE_SQUARE_BRACKET
         { $$ = SubscriptExpressionSemanticAction($1, $3); }
     | NEW_KEYWORD postfixExpression
         { $$ = NewExpressionSemanticAction($2, NULL); }
@@ -368,7 +368,7 @@ leftHandSideExpression:
         { $$ = IdentifierExpressionSemanticAction($1); }
     | leftHandSideExpression DOT IDENTIFIER_NAME
         { $$ = MemberExpressionSemanticAction($1, $3); }
-    | leftHandSideExpression OPEN_BRACKET expression CLOSE_BRACKET
+    | leftHandSideExpression OPEN_SQUARE_BRACKET expression CLOSE_SQUARE_BRACKET
         { $$ = SubscriptExpressionSemanticAction($1, $3); }
     ;
 
@@ -385,7 +385,7 @@ primaryExpression:
     ;
 
 arrayLiteral:
-    OPEN_BRACKET elementList CLOSE_BRACKET
+    OPEN_SQUARE_BRACKET elementList CLOSE_SQUARE_BRACKET
         { $$ = ArrayLiteralSemanticAction($2); }
     ;
 
