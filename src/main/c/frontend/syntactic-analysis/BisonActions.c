@@ -192,6 +192,18 @@ StatementListItem * DeclarationStatementListItemSemanticAction(Declaration * dec
     return item;
 }
 
+WhileStatement * DoWhileSemanticAction(Statement * body, Expression * cond) {
+    return WhileSemanticAction(cond, body);
+}
+
+Statement * DoWhileStatementSemanticAction(WhileStatement * ws) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Statement * statement = ecalloc(1, sizeof(Statement));
+    statement->type = DO_WHILE_STATEMENT;
+    statement->whileStatement = ws;
+    return statement;
+}
+
 ArgumentList * EmptyArgumentListSemanticAction() {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     ArgumentList * argumentList = ecalloc(1, sizeof(ArgumentList));
@@ -500,6 +512,22 @@ VariableDeclarator * VariableDeclaratorSemanticAction(const char * identifier, E
     declarator->next = NULL;
     free((char *) identifier);
     return declarator;
+}
+
+WhileStatement * WhileSemanticAction(Expression * cond, Statement * body) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    WhileStatement * ws = ecalloc(1,sizeof(WhileStatement));
+    ws->condition = cond;
+    ws->body = body;
+    return ws;
+}
+
+Statement * WhileStatementSemanticAction(WhileStatement * ws) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Statement * statement = ecalloc(1,sizeof(Statement));
+    statement->type = WHILE_STATEMENT;
+    statement->whileStatement = ws;
+    return statement;
 }
 
 void checkInitializer(VariableDeclaratorList * list) {

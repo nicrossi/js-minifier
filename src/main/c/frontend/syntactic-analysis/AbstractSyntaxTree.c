@@ -170,7 +170,9 @@ void releaseStatement(Statement * statement) { //NOLINT
             case IF_STATEMENT:         releaseIfStatement(statement->ifStatement); break;
             case BLOCK_STATEMENT:      releaseStatementList(statement->block); break;
             case FOR_STATEMENT:        releaseForStatement(statement->forStatement); break;
-            case TRY_STATEMENT:       releaseTryStatement(statement->tryStatement); break;
+            case TRY_STATEMENT:        releaseTryStatement(statement->tryStatement); break;
+            case WHILE_STATEMENT: case DO_WHILE_STATEMENT:
+                releaseWhileStatement(statement->whileStatement); break;
             default:
                 logWarning(_logger, "Unknown statement type: %d", statement->type);
         }
@@ -253,6 +255,17 @@ void releaseVariableDeclaratorList(VariableDeclaratorList * variableDeclaratorLi
         free(variableDeclaratorList);
         variableDeclaratorList = NULL;
     }
+}
+
+
+void releaseWhileStatement(WhileStatement * whileStatement) {
+    logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (whileStatement == NULL) return;
+
+    releaseExpression(whileStatement->condition);
+    releaseStatement(whileStatement->body);
+    free(whileStatement);
+    whileStatement = NULL;
 }
 
 void releaseProgram(Program * program) {

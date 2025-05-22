@@ -1,0 +1,3 @@
+do {
+    // Nothing
+} while (i > 0);

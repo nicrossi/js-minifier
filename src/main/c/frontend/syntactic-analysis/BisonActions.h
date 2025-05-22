@@ -34,6 +34,8 @@ Expression * CommaExpressionSemanticAction(Expression * expression, Expression *
 Statement * ContinueStatementSemanticAction();
 LexicalDeclaration * CreateLexicalDeclarationSemanticAction(LexicalDeclarationType type, VariableDeclaratorList * variableDeclaratorList);
 StatementListItem * DeclarationStatementListItemSemanticAction(Declaration * declaration);
+WhileStatement * DoWhileSemanticAction(Statement * body, Expression * cond);
+Statement * DoWhileStatementSemanticAction(WhileStatement * ws);
 ArgumentList * EmptyArgumentListSemanticAction();
 StatementList * EmptyBlockSemanticAction();
 Expression * EmptyExpressionSemanticAction();
@@ -71,4 +73,6 @@ Statement * TryStatementSemanticAction(TryStatement * tryStatement);
 Expression * UnaryExpressionSemanticAction(Expression * operand, OperatorType opType, bool isPostfix);
 VariableDeclaratorList * VariableDeclaratorListSemanticAction(VariableDeclarator * variableDeclarator);
 VariableDeclarator * VariableDeclaratorSemanticAction(const char * identifier, Expression * initializer);
+WhileStatement * WhileSemanticAction(Expression * cond, Statement * body);
+Statement * WhileStatementSemanticAction(WhileStatement * ws);
 #endif

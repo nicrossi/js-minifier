@@ -31,6 +31,7 @@
     FinallyClause * finallyClause;
     VariableDeclarator * variableDeclarator;
     VariableDeclaratorList * variableDeclaratorList;
+    WhileStatement * whileStatement;
 }
 
 /**
@@ -53,6 +54,7 @@
 %destructor { releaseString($$); } <string>
 %destructor { releaseVariableDeclarator($$); } <variableDeclarator>
 %destructor { releaseVariableDeclaratorList($$); } <variableDeclaratorList>
+%destructor { releaseWhileStatement($$); } <whileStatement>
 /** Terminals. */
 %token <integer> INTEGER
 
@@ -68,6 +70,7 @@
 %token <token> CONST_KEYWORD
 %token <token> DECREMENT
 %token <token> DIVISION
+%token <token> DO_KEYWORD
 %token <token> ELSE_KEYWORD
 %token <token> EQUAL
 %token <token> EQUALITY INEQUALITY
@@ -93,6 +96,7 @@
 %token <token> SUB
 %token <token> SUM
 %token <token> UNKNOWN
+%token <token> WHILE_KEYWORD
 
 /** Non-terminals. */
 %type <expression> additiveExpression
@@ -125,6 +129,7 @@
 %type <expression> unaryExpression
 %type <variableDeclarator> variableDeclarator
 %type <variableDeclaratorList> variableDeclaratorList
+%type <whileStatement> whileStatement doWhileStatement
 
 /**
  * Precedence and associativity.
@@ -224,6 +229,10 @@ statement:
         { $$ = IfStatementSemanticAction($1); }
     | forStatement
         { $$ = ForStatementSemanticAction($1); }
+    | whileStatement
+        { $$ = WhileStatementSemanticAction($1); }
+    | doWhileStatement
+        { $$ = DoWhileStatementSemanticAction($1); }
     | tryStatement
         { $$ = TryStatementSemanticAction($1); }
     ;
@@ -381,6 +390,16 @@ forStatement:
     FOR_KEYWORD OPEN_PARENTHESIS forStatementInit SEMICOLON optionalExpression SEMICOLON optionalExpression CLOSE_PARENTHESIS statement
       { $$ = ForIterationSemanticAction($3, $5, $7, $9);}
    ;
+
+whileStatement:
+    WHILE_KEYWORD OPEN_PARENTHESIS expression CLOSE_PARENTHESIS statement
+        { $$ = WhileSemanticAction($3, $5); }
+    ;
+
+doWhileStatement:
+    DO_KEYWORD statement WHILE_KEYWORD OPEN_PARENTHESIS expression CLOSE_PARENTHESIS SEMICOLON
+        { $$ = DoWhileSemanticAction($2, $5); }
+    ;
 
 forStatementInit:
     %empty

@@ -28,6 +28,7 @@ typedef struct UpdateOp UpdateOp;
 typedef struct VariableDeclarator VariableDeclarator;
 typedef struct VariableDeclaratorList VariableDeclaratorList;
 typedef struct Expression Expression;
+typedef struct WhileStatement WhileStatement;
 
 typedef enum {
     LEXICAL,
@@ -88,12 +89,14 @@ typedef enum {
     BREAK_STATEMENT,
     CONTINUE_STATEMENT,
     DECLARATION_STATEMENT,
+    DO_WHILE_STATEMENT,
     EXPRESSION_STATEMENT,
     FOR_STATEMENT,
     IF_STATEMENT,
     RETURN_STATEMENT,
     THROW_STATEMENT,
     TRY_STATEMENT,
+    WHILE_STATEMENT,
 } StatementType;
 
 /**
@@ -188,6 +191,7 @@ struct Statement {
         StatementList * block;
         IfStatement * ifStatement;
         ForStatement * forStatement;
+        WhileStatement * whileStatement;
         TryStatement * tryStatement;
     };
 };
@@ -229,6 +233,11 @@ struct VariableDeclaratorList {
     VariableDeclarator * tail;
 };
 
+struct WhileStatement {
+    Expression * condition;
+    Statement * body;
+};
+
 struct Program {
     StatementList * statementList;
 };
@@ -257,4 +266,5 @@ void releaseTryStatement(TryStatement * tryStatement);
 void releaseUpdateOp(UpdateOp * updateOp);
 void releaseVariableDeclarator(VariableDeclarator * variableDeclarator);
 void releaseVariableDeclaratorList(VariableDeclaratorList * variableDeclaratorList);
+void releaseWhileStatement(WhileStatement * whileStatement);
 #endif
