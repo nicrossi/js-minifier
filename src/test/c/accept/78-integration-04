@@ -1,0 +1,3 @@
+const arr = [1, 2, 3, 4];
+const obj = new Point(arr[0], arr[1]);   // NEW + sub-script
+let ok = obj.valid && obj.x > 0 || obj["y"] > 0;

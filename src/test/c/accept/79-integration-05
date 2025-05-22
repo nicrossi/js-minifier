@@ -1,0 +1,10 @@
+try {
+  let value = compute() || fallback();   // if compute() short-circuits
+  if (!value && attempts < MAX) {
+    throw "retry";
+  }
+} catch (e) {
+  log(e);
+} finally {
+  cleanup();
+}

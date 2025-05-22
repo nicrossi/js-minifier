@@ -1,0 +1,8 @@
+let counter = 0, done = false;
+
+while (counter < 10 && !done) {
+  if (counter % 3 === 0 || counter === 7) {
+    done = true;
+  }
+  counter++;
+}
