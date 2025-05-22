@@ -1,0 +1,40 @@
+/* 𝗜𝗻𝘁𝗲𝗴𝗿𝗮𝘁𝗶𝗼𝗻-test program
+ * — exercises:  const / let  • functions with default params
+ *               arithmetic + exponentiation **  • ++ / -- (pre & post)
+ *               for-loop with lexical init      • new X(...) expressions
+ *               throw + try {…} catch ( … )
+ */
+
+function pow2(n = 4) {              // default argument
+    const result = n ** 2;          // exponentiation
+    return result;
+}
+
+function produce(v) {
+    const obj = new Number(v);      // ‘new’ expression with arguments
+    return obj;
+}
+
+function process(limit = 5) {
+    let acc = 0;
+    for (let i = 0; i < limit; i++) {   // lexical for-loop, i++
+        acc = acc + pow2(i);
+    }
+    return acc;
+}
+
+let total = 0;
+
+try {
+    const value = process(3);
+    total = total + produce(value);
+
+    if (total === 0) {              // strict equality
+        throw total;                // throw statement
+    }
+} catch (err) {                     // try-catch
+    total = total - 1;
+}
+
+total++;       // postfix --/++ test
+--total;       // prefix  --/++

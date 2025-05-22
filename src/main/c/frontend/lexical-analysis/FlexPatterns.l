@@ -78,6 +78,8 @@
 "try"                               { return KeywordLexemeAction(createLexicalAnalyzerContext(), TRY_KEYWORD); }
 "catch"                             { return KeywordLexemeAction(createLexicalAnalyzerContext(), CATCH_KEYWORD); }
 "finally"                           { return KeywordLexemeAction(createLexicalAnalyzerContext(), FINALLY_KEYWORD); }
+"throw"                             { return KeywordLexemeAction(createLexicalAnalyzerContext(), THROW_KEYWORD); }
+"new"                               { return KeywordLexemeAction(createLexicalAnalyzerContext(), NEW_KEYWORD); }
 
 "="                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), EQUAL); }
 "=="                                { return PunctuationLexemeAction(createLexicalAnalyzerContext(), EQUALITY); }

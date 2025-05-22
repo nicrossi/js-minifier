@@ -346,6 +346,18 @@ Declaration * LexicalDeclarationSemanticAction(LexicalDeclaration * lexicalDecla
     return declaration;
 }
 
+Expression * NewExpressionSemanticAction(Expression * exp, ArgumentList * args) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Expression * expression = ecalloc(1, sizeof(Expression));
+    expression->type = NEW_EXPRESSION;
+    // Reusing CallExpression structure for new expression
+    CallExpression * call = ecalloc(1, sizeof(CallExpression));
+    call->callee = exp;
+    call->argumentList = args;
+    expression->callExpression = call;
+    return expression;
+}
+
 Expression * OptionalExpression(Expression * expression) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     return expression;
@@ -425,6 +437,14 @@ Expression * StringExpressionSemanticAction(const char * s) {
 FinallyClause * FinallyClauseSemanticAction(StatementList * finallyBlock) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     return _newFinallyClause(finallyBlock);
+}
+
+Statement * ThrowStatementSemanticAction(Expression * expression) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Statement * s = ecalloc(1, sizeof(Statement));
+    s->type = THROW_STATEMENT;
+    s->expression = expression;
+    return s;
 }
 
 TryStatement * TryCatchSemanticAction(StatementList * tryBlock, CatchClause * catchClause) {

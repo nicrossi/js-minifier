@@ -78,7 +78,8 @@ void releaseExpression(Expression * expression) { //NOLINT
             case PREFIX_DECREMENT_EXPR:  case POSTFIX_INCREMENT_EXPR:
                 releaseUpdateOp(expression->updateOp);
                 break;
-            case CALL_EXPRESSION: releaseCallExpression(expression->callExpression); break;
+            case CALL_EXPRESSION: case NEW_EXPRESSION:
+                releaseCallExpression(expression->callExpression); break;
             default:
                 logWarning(_logger, "Unknown expression type: %d", expression->type);
         }
@@ -164,11 +165,11 @@ void releaseStatement(Statement * statement) { //NOLINT
     logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
     if (statement != NULL) {
         switch(statement->type) {
-            case EXPRESSION_STATEMENT: releaseExpression(statement->expression); break;
+            case EXPRESSION_STATEMENT: case RETURN_STATEMENT: case THROW_STATEMENT:
+                releaseExpression(statement->expression); break;
             case IF_STATEMENT:         releaseIfStatement(statement->ifStatement); break;
             case BLOCK_STATEMENT:      releaseStatementList(statement->block); break;
             case FOR_STATEMENT:        releaseForStatement(statement->forStatement); break;
-            case RETURN_STATEMENT:     releaseExpression(statement->expression); break;
             case TRY_STATEMENT:       releaseTryStatement(statement->tryStatement); break;
             default:
                 logWarning(_logger, "Unknown statement type: %d", statement->type);

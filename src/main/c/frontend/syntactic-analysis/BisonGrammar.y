@@ -218,6 +218,8 @@ statement:
         { $$ = ContinueStatementSemanticAction(); }
     | RETURN_KEYWORD optionalExpression SEMICOLON
         { $$ = ReturnStatementSemanticAction($2); }
+    | THROW_KEYWORD  expression SEMICOLON
+        { $$ = ThrowStatementSemanticAction($2); }
     | ifStatement
         { $$ = IfStatementSemanticAction($1); }
     | forStatement
@@ -315,7 +317,11 @@ multiplicativeExpression:
     ;
 
 postfixExpression:
-    leftHandSideExpression INCREMENT
+    NEW_KEYWORD postfixExpression
+        { $$ = NewExpressionSemanticAction($2, NULL); }
+    | NEW_KEYWORD postfixExpression OPEN_PARENTHESIS argumentList CLOSE_PARENTHESIS
+        { $$ = NewExpressionSemanticAction($2, $4); }
+    | leftHandSideExpression INCREMENT
         { $$ = UnaryExpressionSemanticAction($1, INCREMENT_OP, true); }
     | leftHandSideExpression DECREMENT
         { $$ = UnaryExpressionSemanticAction($1, DECREMENT_OP, true); }

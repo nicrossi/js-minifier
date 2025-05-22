@@ -44,6 +44,7 @@ Expression * BinaryExpressionSemanticAction(Expression * left, Expression * righ
 ForInitializer * ExpressionForInitSemanticAction(Expression * expression);
 Statement * ExpressionStatementSemanticAction(Expression * expression);
 FinallyClause * FinallyClauseSemanticAction(StatementList * finallyBlock);
+Statement * ThrowStatementSemanticAction(Expression * expression);
 ForStatement * ForIterationSemanticAction(ForInitializer * initializer, Expression * condition, Expression * increment, Statement * body);
 Statement * ForStatementSemanticAction(ForStatement * forStatement);
 Declaration * FunctionDeclarationSemanticAction(FunctionDeclaration * functionDeclaration);
@@ -54,6 +55,7 @@ Statement * IfStatementSemanticAction(IfStatement * ifStatement);
 Expression * IntegerExpressionSemanticAction(int value);
 ForInitializer * LexicalDeclarationForInitSemanticAction(LexicalDeclaration * forLexicalDeclaration);
 Declaration * LexicalDeclarationSemanticAction(LexicalDeclaration * lexicalConst);
+Expression * NewExpressionSemanticAction(Expression * exp, ArgumentList * args);
 Expression * OptionalExpression(Expression * expression);
 VariableDeclaratorList * ParameterListSemanticAction(const char * parameter);
 Expression * ParenthesisExpressionSemanticAction(Expression * expression);
