@@ -1,0 +1,4 @@
+let ok1 = a && b;
+let ok2 = a || b && c;    // && binds tighter than ||
+let ok3 = (a || b) && c;
+if (x || y && z) return;

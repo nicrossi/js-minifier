@@ -83,6 +83,7 @@
 %token <token> LET_KEYWORD
 %token <token> LESS LESS_EQUAL
 %token <token> LOGICAL_NOT BITWISE_NOT
+%token <token> LOGICAL_AND LOGICAL_OR
 %token <token> MULTIPLICATION EXPONENTIATION
 %token <token> NEW_KEYWORD
 %token <token> OPEN_CURLY_BRACE
@@ -101,6 +102,7 @@
 
 /** Non-terminals. */
 %type <expression> additiveExpression
+%type <expression> logicalOrExpression logicalAndExpression
 %type <argumentList> argumentList elementList
 %type <expression> assignmentExpression
 %type <statementList> block
@@ -138,6 +140,8 @@
  * @see https://www.gnu.org/software/bison/manual/html_node/Precedence.html
  */
 %right EQUAL
+%left  LOGICAL_OR
+%left  LOGICAL_AND
 %left  EQUALITY STRICT_EQUALITY INEQUALITY STRICT_INEQUALITY
 %left  LESS_EQUAL GREAT_EQUAL
 %left  SUM SUB
@@ -272,6 +276,18 @@ expression:
 assignmentExpression:
     leftHandSideExpression EQUAL assignmentExpression
         { $$ = AssignmentExpressionSemanticAction($1, $3); }
+    | logicalOrExpression
+    ;
+
+logicalOrExpression
+    : logicalOrExpression LOGICAL_OR logicalAndExpression
+        { $$ = BinaryExpressionSemanticAction($1, $3, LOGICAL_OR_EXPRESSION); }
+    | logicalAndExpression
+    ;
+
+logicalAndExpression
+    : logicalAndExpression LOGICAL_AND equalityExpression
+        { $$ = BinaryExpressionSemanticAction($1, $3, LOGICAL_AND_EXPRESSION); }
     | equalityExpression
     ;
 

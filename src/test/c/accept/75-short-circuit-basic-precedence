@@ -1,0 +1,10 @@
+let a = 1, b = 2, c;
+
+// && binds tighter than ||
+c = a == 1 && b == 2 || false;   // ( (a==1 && b==2) || false )
+
+// explicit grouping
+c = (a == 1) || (b != 3) && true;
+
+// nested assignment / comma operator
+let ok = (c = a && b , c || false);

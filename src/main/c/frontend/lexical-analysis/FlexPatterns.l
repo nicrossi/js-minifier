@@ -113,6 +113,8 @@
 "%"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), REMAINDER); }
 "!"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), LOGICAL_NOT); }
 "~"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), BITWISE_NOT); }
+"&&"                                { return PunctuationLexemeAction(createLexicalAnalyzerContext(), LOGICAL_AND); }
+"||"                                { return PunctuationLexemeAction(createLexicalAnalyzerContext(), LOGICAL_OR); }
 
 [a-zA-Z_\\$][a-zA-Z0-9_\\$]*        { return IdentifierNameLexemeAction(createLexicalAnalyzerContext()); }
 
