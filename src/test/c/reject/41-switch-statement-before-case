@@ -1,0 +1,5 @@
+switch (value) {
+  work();
+  case 4:
+    work();
+}

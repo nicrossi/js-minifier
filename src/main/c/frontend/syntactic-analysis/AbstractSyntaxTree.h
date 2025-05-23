@@ -16,6 +16,7 @@ void shutdownAbstractSyntaxTreeModule();
  */
 typedef struct Argument Argument;
 typedef struct ArgumentList ArgumentList;
+typedef struct CaseClause CaseClause;
 typedef struct Declaration Declaration;
 typedef struct LexicalDeclaration LexicalDeclaration;
 typedef struct FunctionDeclaration FunctionDeclaration;
@@ -23,12 +24,18 @@ typedef struct Program Program;
 typedef struct Statement Statement;
 typedef struct StatementList StatementList;
 typedef struct StatementListItem StatementListItem;
+typedef struct SwitchStatement SwitchStatement;
 typedef struct TryStatement TryStatement;
 typedef struct UpdateOp UpdateOp;
 typedef struct VariableDeclarator VariableDeclarator;
 typedef struct VariableDeclaratorList VariableDeclaratorList;
 typedef struct Expression Expression;
 typedef struct WhileStatement WhileStatement;
+
+typedef enum {
+    CASE_CLAUSE,
+    DEFAULT_CLAUSE
+} CaseClauseType;
 
 typedef enum {
     LEXICAL,
@@ -102,6 +109,7 @@ typedef enum {
     RETURN_STATEMENT,
     THROW_STATEMENT,
     TRY_STATEMENT,
+    SWITCH_STATEMENT,
     WHILE_STATEMENT,
 } StatementType;
 
@@ -135,6 +143,13 @@ typedef struct {
     Expression * callee;
     ArgumentList * argumentList;
 } CallExpression;
+
+struct CaseClause {
+    CaseClauseType type;
+    Expression * test;
+    StatementList * body;
+    CaseClause * next;
+};
 
 typedef struct {
     /* NULL ⇒ `catch { … }` (parameter-less catch – ES2019) */
@@ -199,7 +214,13 @@ struct Statement {
         ForStatement * forStatement;
         WhileStatement * whileStatement;
         TryStatement * tryStatement;
+        SwitchStatement * switchStatement;
     };
+};
+
+struct SwitchStatement {
+    Expression * discriminant;
+    CaseClause * cases;
 };
 
 struct StatementList {
@@ -254,6 +275,7 @@ struct Program {
 void releaseArgument(Argument * argument);
 void releaseArgumentList(ArgumentList * argumentList);
 void releaseCallExpression(CallExpression * callExpression);
+void releaseCaseClause(CaseClause * clause);
 void releaseCatchClause(CatchClause * catchClause);
 void releaseDeclaration(Declaration * declaration);
 void releaseExpression(Expression * expression);
@@ -268,6 +290,7 @@ void releaseStatement(Statement * statement);
 void releaseStatementList(StatementList * statementList);
 void releaseString(char * string);
 void releaseStatementListItem(StatementListItem * statementListItem);
+void releaseSwitchStatement(SwitchStatement * statement);
 void releaseTryStatement(TryStatement * tryStatement);
 void releaseUpdateOp(UpdateOp * updateOp);
 void releaseVariableDeclarator(VariableDeclarator * variableDeclarator);

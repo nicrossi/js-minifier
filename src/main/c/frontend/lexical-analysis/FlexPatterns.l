@@ -84,10 +84,13 @@
 "do"                                { return KeywordLexemeAction(createLexicalAnalyzerContext(), DO_KEYWORD); }
 "true"                              { return KeywordLexemeAction(createLexicalAnalyzerContext(), TRUE_LITERAL); }
 "false"                             { return KeywordLexemeAction(createLexicalAnalyzerContext(), FALSE_LITERAL); }
+"switch"                            { return KeywordLexemeAction(createLexicalAnalyzerContext(), SWITCH_KEYWORD); }
+"case"                              { return KeywordLexemeAction(createLexicalAnalyzerContext(), CASE_KEYWORD); }
+"default"                           { return KeywordLexemeAction(createLexicalAnalyzerContext(), DEFAULT_KEYWORD); }
 
 "="                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), EQUAL); }
 "=="                                { return PunctuationLexemeAction(createLexicalAnalyzerContext(), EQUALITY); }
-"!="                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), INEQUALITY); }
+"!="                                { return PunctuationLexemeAction(createLexicalAnalyzerContext(), INEQUALITY); }
 "==="                               { return PunctuationLexemeAction(createLexicalAnalyzerContext(), STRICT_EQUALITY); }
 "!=="                               { return PunctuationLexemeAction(createLexicalAnalyzerContext(), STRICT_INEQUALITY); }
 ";"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), SEMICOLON); }
@@ -115,6 +118,7 @@
 "~"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), BITWISE_NOT); }
 "&&"                                { return PunctuationLexemeAction(createLexicalAnalyzerContext(), LOGICAL_AND); }
 "||"                                { return PunctuationLexemeAction(createLexicalAnalyzerContext(), LOGICAL_OR); }
+":"                                 { return PunctuationLexemeAction(createLexicalAnalyzerContext(), COLON); }
 
 [a-zA-Z_\\$][a-zA-Z0-9_\\$]*        { return IdentifierNameLexemeAction(createLexicalAnalyzerContext()); }
 

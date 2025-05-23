@@ -182,6 +182,8 @@ void releaseStatement(Statement * statement) { //NOLINT
             case TRY_STATEMENT:        releaseTryStatement(statement->tryStatement); break;
             case WHILE_STATEMENT: case DO_WHILE_STATEMENT:
                 releaseWhileStatement(statement->whileStatement); break;
+            case SWITCH_STATEMENT:     releaseSwitchStatement(statement->switchStatement); break;
+            case BREAK_STATEMENT: case CONTINUE_STATEMENT: break; // No need to release anything
             default:
                 logWarning(_logger, "Unknown statement type: %d", statement->type);
         }
@@ -275,6 +277,23 @@ void releaseWhileStatement(WhileStatement * whileStatement) {
     releaseStatement(whileStatement->body);
     free(whileStatement);
     whileStatement = NULL;
+}
+
+void releaseCaseClause(CaseClause * clause) {
+    while (clause) {
+        CaseClause * next = clause->next;
+        releaseExpression(clause->test);
+        releaseStatementList(clause->body);
+        free(clause);
+        clause = next;
+    }
+}
+
+void releaseSwitchStatement(SwitchStatement * statement) {
+    releaseExpression(statement->discriminant);
+    releaseCaseClause(statement->cases);
+    free(statement);
+    statement = NULL;
 }
 
 void releaseProgram(Program * program) {

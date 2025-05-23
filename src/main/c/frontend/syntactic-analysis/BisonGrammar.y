@@ -15,6 +15,7 @@
 
 	/** Non-terminals. */
 	ArgumentList * argumentList;
+	CaseClause * caseClause;
 	Declaration * declaration;
 	Expression * expression;
 	ForInitializer * forStatementInit;
@@ -26,6 +27,7 @@
 	Statement * statement;
     StatementList * statementList;
     StatementListItem * statementListItem;
+    SwitchStatement * switchStatement;
     TryStatement * tryStatement;
     CatchClause * catchClause;
     FinallyClause * finallyClause;
@@ -99,6 +101,11 @@
 %token <token> WHILE_KEYWORD
 %token <token> DOT OPEN_SQUARE_BRACKET CLOSE_SQUARE_BRACKET
 %token <token> TRUE_LITERAL FALSE_LITERAL
+%token <token> SWITCH_KEYWORD
+%token <token> CASE_KEYWORD
+%token <token> DEFAULT_KEYWORD
+%token <token> COLON
+
 
 /** Non-terminals. */
 %type <expression> additiveExpression
@@ -133,6 +140,9 @@
 %type <variableDeclarator> variableDeclarator
 %type <variableDeclaratorList> variableDeclaratorList
 %type <whileStatement> whileStatement doWhileStatement
+%type <switchStatement> switchStatement
+%type <caseClause> caseClauses caseClause defaultClause
+
 
 /**
  * Precedence and associativity.
@@ -239,6 +249,33 @@ statement:
         { $$ = DoWhileStatementSemanticAction($1); }
     | tryStatement
         { $$ = TryStatementSemanticAction($1); }
+    | switchStatement
+        { $$ = SwitchStatementSemanticAction($1); }
+    ;
+
+switchStatement:
+    SWITCH_KEYWORD OPEN_PARENTHESIS expression CLOSE_PARENTHESIS
+    OPEN_CURLY_BRACE caseClauses CLOSE_CURLY_BRACE
+        { $$ = SwitchSemanticAction($3, $6); }
+    ;
+
+caseClauses:
+    %empty
+        { $$ = EmptyCaseClauseSemanticAction(); }
+    | caseClauses caseClause
+        { $$ = AppendCaseClauseSemanticAction($1, $2); }
+    | caseClauses defaultClause
+        { $$ = AppendCaseClauseSemanticAction($1, $2); }
+    ;
+
+caseClause:
+    CASE_KEYWORD expression COLON statementList
+        { $$ = CaseClauseSemanticAction($2, $4); }
+    ;
+
+defaultClause:
+    DEFAULT_KEYWORD COLON statementList
+        { $$ = DefaultClauseSemanticAction($3); }
     ;
 
 tryStatement:

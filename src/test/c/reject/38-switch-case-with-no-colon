@@ -1,0 +1,4 @@
+switch (value) {
+  case 3                    // ← need “:”
+    work();
+}

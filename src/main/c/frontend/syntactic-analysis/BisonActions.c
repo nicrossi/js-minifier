@@ -242,6 +242,11 @@ StatementList * EmptyBlockSemanticAction() {
     return statementList;
 }
 
+CaseClause * EmptyCaseClauseSemanticAction() {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    return NULL;
+}
+
 Expression * EmptyExpressionSemanticAction() {
     _logSyntacticAnalyzerAction(__FUNCTION__ );
     Expression * expression = ecalloc(1, sizeof(Expression));
@@ -469,6 +474,47 @@ Expression * StringExpressionSemanticAction(const char * s) {
     free((char *) s);
     return expression;
 }
+
+SwitchStatement * SwitchSemanticAction(Expression * discriminant, CaseClause * cases) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    SwitchStatement * switchStatement = ecalloc(1, sizeof(SwitchStatement));
+    switchStatement->discriminant = discriminant;
+    switchStatement->cases = cases;
+    return switchStatement;
+}
+
+CaseClause * CaseClauseSemanticAction(Expression * test, StatementList * body) {
+    CaseClause * c = ecalloc(1, sizeof(CaseClause));
+    c->type = CASE_CLAUSE;
+    c->test = test;
+    c->body = body;
+    return c;
+}
+
+CaseClause * DefaultClauseSemanticAction(StatementList * body) {
+    CaseClause * c = ecalloc(1, sizeof(CaseClause));
+    c->type = DEFAULT_CLAUSE;
+    c->test = NULL; // indicates ‘default’
+    c->body = body;
+    return c;
+}
+
+CaseClause * AppendCaseClauseSemanticAction(CaseClause * head, CaseClause * c) {
+    if (!head) return c;
+
+    CaseClause * it = head;
+    while (it->next) it = it->next;
+    it->next = c;
+    return head;
+}
+
+Statement * SwitchStatementSemanticAction(SwitchStatement * sw) {
+    Statement * stmt = ecalloc(1, sizeof(Statement));
+    stmt->type = SWITCH_STATEMENT;
+    stmt->switchStatement = sw;
+    return stmt;
+}
+
 
 FinallyClause * FinallyClauseSemanticAction(StatementList * finallyBlock) {
     _logSyntacticAnalyzerAction(__FUNCTION__);

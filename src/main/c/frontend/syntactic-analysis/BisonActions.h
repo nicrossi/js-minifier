@@ -18,6 +18,7 @@ void shutdownBisonActionsModule();
 /**
  * Bison semantic actions.
  */
+CaseClause * AppendCaseClauseSemanticAction(CaseClause * list, CaseClause * clause);
 VariableDeclaratorList * AppendVariableDeclaratorListSemanticAction(VariableDeclaratorList * list, VariableDeclarator * variableDeclarator);
 ArgumentList * AppendArgumentListSemanticAction(ArgumentList * argumentList, Expression * argument);
 VariableDeclaratorList * AppendParameterListSemanticAction(VariableDeclaratorList * list, VariableDeclarator * parameter);
@@ -28,6 +29,7 @@ StatementList * BlockSemanticAction(StatementList * statementList);
 Statement * BreakStatementSemanticAction();
 Statement * BlockStatementSemanticAction(StatementList * statementList);
 Expression * CallExpressionSemanticAction(Expression * callee, ArgumentList * argumentList);
+CaseClause * CaseClauseSemanticAction(Expression * test, StatementList * body);
 CatchClause * CatchClauseSemanticAction(const char * identifier, StatementList * block);
 CatchClause * CatchClauseNoParamSemanticAction(StatementList * catchBlock);
 Expression * ChainedAssignmentSemanticAction(Expression * left, Expression * right);
@@ -35,6 +37,7 @@ Expression * CommaExpressionSemanticAction(Expression * expression, Expression *
 Statement * ContinueStatementSemanticAction();
 LexicalDeclaration * CreateLexicalDeclarationSemanticAction(LexicalDeclarationType type, VariableDeclaratorList * variableDeclaratorList);
 StatementListItem * DeclarationStatementListItemSemanticAction(Declaration * declaration);
+CaseClause * DefaultClauseSemanticAction(StatementList * body);
 WhileStatement * DoWhileSemanticAction(Statement * body, Expression * cond);
 Statement * DoWhileStatementSemanticAction(WhileStatement * ws);
 ArgumentList * EmptyArgumentListSemanticAction();
@@ -43,6 +46,7 @@ Expression * EmptyExpressionSemanticAction();
 ForInitializer * EmptyForInitSemanticAction();
 VariableDeclaratorList * EmptyParameterListSemanticAction();
 StatementList * EmptyStatementListSemanticAction();
+CaseClause * EmptyCaseClauseSemanticAction();
 Expression * BinaryExpressionSemanticAction(Expression * left, Expression * right, ExpressionType type);
 ForInitializer * ExpressionForInitSemanticAction(Expression * expression);
 Statement * ExpressionStatementSemanticAction(Expression * expression);
@@ -67,6 +71,8 @@ Program * StatementListProgramSemanticAction(CompilerState * compilerState, Stat
 StatementList * StatementListSemanticAction(StatementList * statementList, StatementListItem * statementListItem);
 StatementListItem * StatementStatementListItemSemanticAction(Statement * statement);
 Expression * StringExpressionSemanticAction(const char * s);
+SwitchStatement * SwitchSemanticAction(Expression * discriminant, CaseClause * cases);
+Statement * SwitchStatementSemanticAction(SwitchStatement * sw);
 TryStatement * TryCatchSemanticAction(StatementList * tryBlock, CatchClause * catchClause);
 TryStatement * TryFinallySemanticAction(StatementList * tryBlock, FinallyClause * finallyClause);
 TryStatement * TryCatchFinallySemanticAction(StatementList * tryBlock, CatchClause * catchClause, FinallyClause * finallyClause);
@@ -81,4 +87,5 @@ Expression * SubscriptExpressionSemanticAction(Expression *base, Expression *ind
 Expression * ArrayLiteralSemanticAction(ArgumentList *elements);
 StatementListItem * FunctionDeclarationStatementListItemSemanticAction(FunctionDeclaration * d);
 StatementListItem * LexicalDeclarationStatementListItemSemanticAction(LexicalDeclaration * d);
+
 #endif

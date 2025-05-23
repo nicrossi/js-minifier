@@ -1,0 +1,5 @@
+let x = 10;
+switch (x && 1) {   // tests precedence with new logical-ops
+  default:
+    x++;
+}
