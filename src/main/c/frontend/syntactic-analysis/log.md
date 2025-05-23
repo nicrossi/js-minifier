@@ -1,4 +1,4 @@
-# Mini-JS Frontend – Grammar Status Report
+# Frontend – Grammar Status Report
 *(Bison + Flex parser for a JavaScript-like language)*
 
 ---
@@ -10,7 +10,7 @@
 | **Programs & blocks**      | `program` root, nested statement lists, `{ … }` blocks                                                                                                                                                                                                                                                                                                             |
 | **Declarations**           | `let` / `const` lexical declarations (terminated with `;`) &nbsp;·&nbsp; classic `function foo (…) { … }` declarations                                                                                                                                                                                                                                             |
 | **Expressions**            | • literals: boolean, integer & string<br>• identifiers, member access `obj.prop`, computed access `obj[expr]`<br>• `new` expressions (with or without argument list) – precedence issues fixed<br>• unary `+ - ! ~ ++ --` (pre & post)<br>• binary `** * / % + - \| \| && `<br>• relational `< <= > >=`<br>• (strict) equality `== != === !==`<br>• comma operator |
-| **Statements**             | expression, `return`, `break`, `continue`, `throw`, `if / else`, classic `for ( ; ; )`, `while (…)`, `do … while`, `try / catch / finally`                                                                                                                                                                                                                         |
+| **Statements**             | expression, `return`, `break`, `continue`, `throw`, `if / else`, classic `for ( ; ; )`, `while (…)`, `do … while`, `try / catch / finally`, `switch / case / default`                                                                                                                                                                                              |
 | **Literals / collections** | array literals `[1, , 3]` (sparse allowed)                                                                                                                                                                                                                                                                                                                         |
 | **AST & memory**           | All node types implemented; every node has a matching `release…()` and is wired into Bison `%destructor` directives                                                                                                                                                                                                                                                |
 | **Error handling**         | Fatal error on `const` without initializer; otherwise Bison’s default abort on first syntax error                                                                                                                                                                                                                                                                  |
@@ -27,17 +27,17 @@
 
 ## 3 · Still missing / planned work
 
-| Area | Gaps |
-|------|------|
-| **Operators** | Logical `&& ||`, bitwise `& | ^ << >>`, compound assignments `+= -= …`, `instanceof`, `in`, nullish `??`, ternary `? :` |
+| Area | Gaps                                         |
+|------|----------------------------------------------|
+| **Operators** | bitwise `& \| ^ << >>`, compound assignments `+= -= …`, nullish `??`, ternary `? :` |
 | **Object literals** | `{ a: 1, ["k"]: v }`, shorthand & computed properties |
-| **Function expressions & arrows** | Only *function declarations* parsed; arrow, anonymous, generators pending |
-| **Classes & modules** | `class`, `extends`, `super`, `import`, `export`, `this` |
+| **Function expressions & arrows** | Only *function declarations* parsed; arrow, anonymous, generators **(not supported)** |
+| **Classes & modules** | `import`, `export`                           |
 | **Destructuring & spread** | `[a, ...rest] = arr`, `{ x, ...obj }`, spread in calls |
-| **Automatic semicolon insertion (ASI)** | Currently hard-coded only for a few sites |
-| **Literal variants** | Hex / binary / octal numerics, BigInt, template literals, unicode escapes |
-| **Error recovery** | Parser stops at first error – more robust recovery desirable for IDE tooling |
+| **Automatic semicolon insertion (ASI)** | Currently hard-coded only for a few sites    |
+| **Literal variants** | Hex / binary / octal numerics, BigInt, template literals, unicode escapes **(not supported)** |
+| **Error recovery** | Parser stops at first error                  |
 
 ---
 
-_Last updated: 2025-05-22_
+_Last updated: 2025-05-23_
