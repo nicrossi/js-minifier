@@ -4,6 +4,9 @@
 #include "Type.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
+
+static const char *outputFileName = NULL;
 
 /**
  * Analog to "getStringOrDefault", but returning true if the string is exactly
@@ -20,4 +23,16 @@ const boolean getBooleanOrDefault(const char * name, const boolean defaultValue)
  */
 const char * getStringOrDefault(const char * name, const char * defaultValue);
 
+/**
+ * Gets the output stream to be used by the program, which is either the
+ * standard output or a file specified by the "OUTPUT_FILE" argument.
+ *
+ * @see https://cplusplus.com/reference/cstdio/fopen/
+ */
+FILE * getOutputStream();
+
+/**
+ * Sets the output file name to be used by the program.
+ */
+void setOutputFileName(const char *filename);
 #endif

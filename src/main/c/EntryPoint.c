@@ -23,6 +23,9 @@ const int main(const int count, const char ** arguments) {
 
 	// Logs the arguments of the application.
 	for (int k = 0; k < count; ++k) {
+        if (strncmp(arguments[k], "OUTPUT_FILE=", 12) == 0) {
+            setOutputFileName(arguments[k] + 12);
+        }
 		logDebugging(logger, "Argument %d: \"%s\"", k, arguments[k]);
 	}
 

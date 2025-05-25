@@ -24,3 +24,24 @@ const char * getStringOrDefault(const char * name, const char * defaultValue) {
 		return value;
 	}
 }
+
+void setOutputFileName(const char *filename) {
+    outputFileName = filename;
+}
+
+FILE * getOutputStream() {
+    static FILE * cachedFile = NULL;
+    static int initialized = 0;
+    if (!initialized) {
+        if (outputFileName == NULL) {
+            cachedFile = stdout;
+        } else {
+            cachedFile = fopen(outputFileName, "w");
+            if (cachedFile == NULL) {
+                cachedFile = stdout;
+            }
+        }
+        initialized = 1;
+    }
+    return cachedFile;
+}

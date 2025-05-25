@@ -156,8 +156,9 @@ static void _output(const unsigned int indentationLevel, const char * const form
 	va_start(arguments, format);
 	char * indentation = _indentation(indentationLevel);
 	char * effectiveFormat = concatenate(2, indentation, format);
-	vfprintf(stdout, effectiveFormat, arguments);
-	fflush(stdout);
+    FILE * out = getOutputStream();
+	vfprintf(out, effectiveFormat, arguments);
+	fflush(out);
 	free(effectiveFormat);
 	free(indentation);
 	va_end(arguments);
