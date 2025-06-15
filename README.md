@@ -8,7 +8,8 @@ A Javascript minifier written in C, and leavering a Flex-Bison Compiler. \
 While simple, this minifier will aim to reduce code size through a series of rules, progressing from basic textual
 transformations to more advanced semantic optimizations.
 
-Check progress [log](src/main/c/frontend/syntactic-analysis/log.md).
+**Check frontend progress** [log](src/main/c/frontend/syntactic-analysis/log.md). \
+**Check backend progress** [log](src/main/c/backend/log.md).
 # Flex-Bison-Compiler
 
 A base compiler example, developed with Flex and Bison.
