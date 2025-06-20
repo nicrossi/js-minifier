@@ -1,0 +1,7 @@
+try {
+  let x = 10;
+} catch (err) {
+  x = 0;
+} finally {
+  const done = 1;
+}
