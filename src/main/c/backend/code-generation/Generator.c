@@ -8,135 +8,135 @@ static Logger * _logger = NULL;
 
 void initializeGeneratorModule() {
 	_logger = createLogger("Generator");
+    initializeExpressionGeneratorModule();
 }
 
 void shutdownGeneratorModule() {
 	if (_logger != NULL) {
 		destroyLogger(_logger);
 	}
+    shutdownExpressionGeneratorModule();
 }
 
 /** PRIVATE FUNCTIONS */
+typedef void (* StatementGenFn) (const StatementListItem * statementListItem);
+typedef void (* DeclarationGenFn) (const Declaration * declaration);
 
-static const char _expressionTypeToCharacter(const ExpressionType type);
-static void _generateConstant(const unsigned int indentationLevel, Constant * constant);
-static void _generateEpilogue(const int value);
-static void _generateExpression(const unsigned int indentationLevel, Expression * expression);
-static void _generateFactor(const unsigned int indentationLevel, Factor * factor);
-static void _generateProgram(Program * program);
-static void _generatePrologue(void);
+static void _genProgram(Program * program);
 static char * _indentation(const unsigned int indentationLevel);
-static void _output(const unsigned int indentationLevel, const char * const format, ...);
 
-/**
- * Converts and expression type to the proper character of the operation
- * involved, or returns '\0' if that's not possible.
- */
-static const char _expressionTypeToCharacter(const ExpressionType type) {
-	switch (type) {
-		case ADDITION: return '+';
-		case DIVISION: return '/';
-		case MULTIPLICATION: return '*';
-		case SUBTRACTION: return '-';
-		default:
-			logError(_logger, "The specified expression type cannot be converted into character: %d", type);
-			return '\0';
-	}
+static void _genStatementList(const StatementList * statementList);
+static void _genStatementListItem(const StatementListItem * sli);
+static void _genStatement(const Statement * stmt);
+static void _genBlockStatement(const Statement * st);
+static void _genBreakStatement(const Statement * st);
+static void _genContinueStatement(const Statement * st);
+static void _genDeclarationStatement(const StatementListItem * sli);
+static void _genDoWhileStatement(const Statement * st);
+static void _genExpressionStatement(const Statement * st);
+static void _genForStatement(const Statement * st);
+static void _genIfStatement(const Statement * st);
+static void _genReturnStatement(const Statement * st);
+static void _genThrowStatement(const Statement * st);
+static void _genTryStatement(const Statement * st);
+static void _genSwitchStatement(const Statement * st);
+static void _genWhileStatement(const Statement * st);
+
+static void _emitDeclaration(const Declaration * declaration);
+static void _emitLexicalDeclaration(const Declaration * declaration);
+static void _emitFunctionDeclaration(const Declaration * declaration);
+
+static const StatementGenFn _statementGenTable[] = {
+        // [StatementType] = handlerFunction
+//        [BLOCK_STATEMENT] = _genBlockStatement,
+//        [BREAK_STATEMENT] = _genBreakStatement,
+//        [CONTINUE_STATEMENT] = _genContinueStatement,
+        [DECLARATION_STATEMENT] = _genDeclarationStatement,
+//        [DO_WHILE_STATEMENT] = _genDoWhileStatement,
+//        [EXPRESSION_STATEMENT] = _genExpressionStatement,
+//        [FOR_STATEMENT] = _genForStatement,
+//        [IF_STATEMENT] = _genIfStatement,
+//        [RETURN_STATEMENT] = _genReturnStatement,
+//        [THROW_STATEMENT] = _genThrowStatement,
+//        [TRY_STATEMENT] = _genTryStatement,
+//        [SWITCH_STATEMENT] = _genSwitchStatement,
+//        [WHILE_STATEMENT] = _genWhileStatement
+};
+
+static const DeclarationGenFn _declarationGenTable[] = {
+        // [DeclarationType] = handlerFunction
+        [LEXICAL] = _emitLexicalDeclaration,
+        [FUNCTION] = _emitFunctionDeclaration,
+};
+
+/* Generates the output of the program. */
+static void _genProgram(Program * program) {
+    _genStatementList(program->statementList);
 }
 
-/**
- * Generates the output of a constant.
- */
-static void _generateConstant(const unsigned int indentationLevel, Constant * constant) {
-	_output(indentationLevel, "%s", "[ $C$, circle, draw, black!20\n");
-	_output(1 + indentationLevel, "%s%d%s", "[ $", constant->value, "$, circle, draw ]\n");
-	_output(indentationLevel, "%s", "]\n");
+/* Generates the output of a statement list. */
+static void _genStatementList(const StatementList * statementList) {
+    for (const StatementListItem * it = statementList->head; it; it = it->next) {
+        _genStatementListItem(it);
+    }
 }
 
-/**
- * Creates the epilogue of the generated output, that is, the final lines that
- * completes a valid Latex document.
- */
-static void _generateEpilogue(const int value) {
-	_output(0, "%s%d%s",
-		"            [ $", value, "$, circle, draw, blue ]\n"
-		"        ]\n"
-		"    \\end{forest}\n"
-		"\\end{document}\n\n"
-	);
+/* Generate declaration statement */
+static void _genDeclarationStatement(const StatementListItem * sli) {
+    if (sli == NULL || sli->declaration == NULL) {
+        logError(_logger, "Attempt to generate output for a NULL declaration statement.");
+        return;
+    }
+    logDebugging(_logger, "Generating output for declaration statement.");
+    _emitDeclaration(sli->declaration);
 }
 
-/**
- * Generates the output of an expression.
- */
-static void _generateExpression(const unsigned int indentationLevel, Expression * expression) {
-	_output(indentationLevel, "%s", "[ $E$, circle, draw, black!20\n");
-	switch (expression->type) {
-		case ADDITION:
-		case DIVISION:
-		case MULTIPLICATION:
-		case SUBTRACTION:
-			_generateExpression(1 + indentationLevel, expression->leftExpression);
-			_output(1 + indentationLevel, "%s%c%s", "[ $", _expressionTypeToCharacter(expression->type), "$, circle, draw, purple ]\n");
-			_generateExpression(1 + indentationLevel, expression->rightExpression);
-			break;
-		case FACTOR:
-			_generateFactor(1 + indentationLevel, expression->factor);
-			break;
-		default:
-			logError(_logger, "The specified expression type is unknown: %d", expression->type);
-			break;
-	}
-	_output(indentationLevel, "%s", "]\n");
+/* Generates the output of a statement. */
+static void _genStatementListItem(const StatementListItem * sli) {
+    if (sli == NULL) {
+        logDebugging(_logger, "Attempt to generate output for a NULL statement.");
+        return;
+    }
+
+    logDebugging(_logger, "Generating output for statement of type: %d", sli->type);
+    (sli->type < ARRAY_LEN(_statementGenTable) && _statementGenTable[sli->type] != NULL)
+        ? _statementGenTable[sli->type](sli)
+        : logError(_logger, "Unknown statement type: %d", sli->type);
 }
 
-/**
- * Generates the output of a factor.
- */
-static void _generateFactor(const unsigned int indentationLevel, Factor * factor) {
-	_output(indentationLevel, "%s", "[ $F$, circle, draw, black!20\n");
-	switch (factor->type) {
-		case CONSTANT:
-			_generateConstant(1 + indentationLevel, factor->constant);
-			break;
-		case EXPRESSION:
-			_output(1 + indentationLevel, "%s", "[ $($, circle, draw, purple ]\n");
-			_generateExpression(1 + indentationLevel, factor->expression);
-			_output(1 + indentationLevel, "%s", "[ $)$, circle, draw, purple ]\n");
-			break;
-		default:
-			logError(_logger, "The specified factor type is unknown: %d", factor->type);
-			break;
-	}
-	_output(indentationLevel, "%s", "]\n");
+static void _emitDeclaration(const Declaration * declaration) {
+    logDebugging(_logger, "Generating output for declaration of type: %d", declaration->type);
+    (declaration->type < ARRAY_LEN(_declarationGenTable) && _declarationGenTable[declaration->type] != NULL)
+        ? _declarationGenTable[declaration->type](declaration)
+        : logError(_logger, "Unknown declaration type: %d", declaration->type);
 }
 
-/**
- * Generates the output of the program.
- */
-static void _generateProgram(Program * program) {
-	_generateExpression(3, program->expression);
+static void _emitLexicalDeclaration(const Declaration * declaration) {
+    if (declaration == NULL || declaration->lexicalDeclaration == NULL) {
+        logError(_logger, "Attempt to generate output for a NULL lexical declaration.");
+        return;
+    }
+    logDebugging(_logger, "Generating output for lexical declaration.");
+    const char * keyword = (declaration->lexicalDeclaration->type == LET_DECLARATION) ? "let" : "const";
+    EMIT("%s ", keyword);
+
+    VariableDeclaratorList * declaratorList = declaration->lexicalDeclaration->declaratorList;
+    for (const VariableDeclarator * vd = declaratorList->head; vd; vd = vd->next) {
+        EMIT("%s", vd->identifier);
+        if (vd->initializer != NULL) {
+            EMIT("=");
+            genExpression(vd->initializer);
+        }
+        if (vd->next != NULL) {
+            EMIT(",");
+        }
+    }
+
+    EMIT(";");
 }
 
-/**
- * Creates the prologue of the generated output, a Latex document that renders
- * a tree thanks to the Forest package.
- *
- * @see https://ctan.dcc.uchile.cl/graphics/pgf/contrib/forest/forest-doc.pdf
- */
-static void _generatePrologue(void) {
-	_output(0, "%s",
-		"\\documentclass{standalone}\n\n"
-		"\\usepackage[utf8]{inputenc}\n"
-		"\\usepackage[T1]{fontenc}\n"
-		"\\usepackage{amsmath}\n"
-		"\\usepackage{forest}\n"
-		"\\usepackage{microtype}\n\n"
-		"\\begin{document}\n"
-		"    \\centering\n"
-		"    \\begin{forest}\n"
-		"        [ \\text{$=$}, circle, draw, purple\n"
-	);
+static void _emitFunctionDeclaration(const Declaration * declaration) {
+    logDebugging(_logger, "Generating output for function declaration.");
 }
 
 /**
@@ -146,12 +146,13 @@ static char * _indentation(const unsigned int level) {
 	return indentation(_indentationCharacter, level, _indentationSize);
 }
 
+/** PUBLIC FUNCTIONS */
 /**
- * Outputs a formatted string to standard output. The "fflush" instruction
+ * Outputs a formatted string to output. The "fflush" instruction
  * allows to see the output even close to a failure, because it drops the
  * buffering.
  */
-static void _output(const unsigned int indentationLevel, const char * const format, ...) {
+void output(const unsigned int indentationLevel, const char * const format, ...) {
 	va_list arguments;
 	va_start(arguments, format);
 	char * indentation = _indentation(indentationLevel);
@@ -164,12 +165,8 @@ static void _output(const unsigned int indentationLevel, const char * const form
 	va_end(arguments);
 }
 
-/** PUBLIC FUNCTIONS */
-
 void generate(CompilerState * compilerState) {
 	logDebugging(_logger, "Generating final output...");
-	_generatePrologue();
-	_generateProgram(compilerState->abstractSyntaxtTree);
-	_generateEpilogue(compilerState->value);
+	_genProgram(compilerState->abstractSyntaxtTree);
 	logDebugging(_logger, "Generation is done.");
 }
