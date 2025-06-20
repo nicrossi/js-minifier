@@ -1,0 +1,1 @@
+let a=2;let b;if(a==2){const foo=a;if(1==1){let a=2;}}else{b=3;}

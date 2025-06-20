@@ -19,7 +19,7 @@ void shutdownGeneratorModule() {
 }
 
 /** PRIVATE FUNCTIONS */
-typedef void (* StatementGenFn) (const StatementListItem * statementListItem);
+typedef void (* StatementGenFn) (const Statement * statement);
 typedef void (* DeclarationGenFn) (const Declaration * declaration);
 
 static void _genProgram(Program * program);
@@ -33,7 +33,7 @@ static void _genBreakStatement(const Statement * st);
 static void _genContinueStatement(const Statement * st);
 static void _genDeclarationStatement(const StatementListItem * sli);
 static void _genDoWhileStatement(const Statement * st);
-static void _genExpressionStatement(const StatementListItem * sli);
+static void _genExpressionStatement(const Statement * sli);
 static void _genForStatement(const Statement * st);
 static void _genIfStatement(const Statement * st);
 static void _genReturnStatement(const Statement * st);
@@ -48,14 +48,14 @@ static void _emitFunctionDeclaration(const Declaration * declaration);
 
 static const StatementGenFn _statementGenTable[] = {
         // [StatementType] = handlerFunction
-//        [BLOCK_STATEMENT] = _genBlockStatement,
+        [BLOCK_STATEMENT] = _genBlockStatement,
 //        [BREAK_STATEMENT] = _genBreakStatement,
 //        [CONTINUE_STATEMENT] = _genContinueStatement,
-        [DECLARATION_STATEMENT] = _genDeclarationStatement,
+        [DECLARATION_STATEMENT] = NULL, // Handled separately
 //        [DO_WHILE_STATEMENT] = _genDoWhileStatement,
         [EXPRESSION_STATEMENT] = _genExpressionStatement,
 //        [FOR_STATEMENT] = _genForStatement,
-//        [IF_STATEMENT] = _genIfStatement,
+        [IF_STATEMENT] = _genIfStatement,
 //        [RETURN_STATEMENT] = _genReturnStatement,
 //        [THROW_STATEMENT] = _genThrowStatement,
 //        [TRY_STATEMENT] = _genTryStatement,
@@ -66,7 +66,7 @@ static const StatementGenFn _statementGenTable[] = {
 static const DeclarationGenFn _declarationGenTable[] = {
         // [DeclarationType] = handlerFunction
         [LEXICAL] = _emitLexicalDeclaration,
-        [FUNCTION] = _emitFunctionDeclaration,
+//        [FUNCTION] = _emitFunctionDeclaration,
 };
 
 /* Generates the output of the program. */
@@ -83,7 +83,7 @@ static void _genStatementList(const StatementList * statementList) {
 
 /* Generate declaration statement */
 static void _genDeclarationStatement(const StatementListItem * sli) {
-    if (sli == NULL || sli->declaration == NULL) {
+    if (sli->declaration == NULL) {
         logError(_logger, "Attempt to generate output for a NULL declaration statement.");
         return;
     }
@@ -99,14 +99,24 @@ static void _genStatementListItem(const StatementListItem * sli) {
     }
 
     logDebugging(_logger, "Generating output for statement of type: %d", sli->type);
-    (sli->type < ARRAY_LEN(_statementGenTable) && _statementGenTable[sli->type] != NULL)
-        ? _statementGenTable[sli->type](sli)
-        : logError(_logger, "Unknown statement type: %d", sli->type);
+    if (sli->type >= 0 && sli->type < ARRAY_LEN(_statementGenTable)) {
+        sli->type == DECLARATION_STATEMENT
+        ? _genDeclarationStatement(sli) : _genStatement(sli->statement);
+    } else {
+        logError(_logger, "Unknown statement type: %d", sli->type);
+    }
+}
+
+/* Generate statement */
+static void _genStatement(const Statement * stmt) {
+    _statementGenTable[stmt->type](stmt);
 }
 
 static void _emitDeclaration(const Declaration * declaration) {
-    logDebugging(_logger, "Generating output for declaration of type: %d", declaration->type);
-    (declaration->type < ARRAY_LEN(_declarationGenTable) && _declarationGenTable[declaration->type] != NULL)
+    logDebugging(_logger, "Generating output for declaration of type: %d",
+                 declaration->type);
+    (declaration->type < ARRAY_LEN(_declarationGenTable)
+     && _declarationGenTable[declaration->type] != NULL)
         ? _declarationGenTable[declaration->type](declaration)
         : logError(_logger, "Unknown declaration type: %d", declaration->type);
 }
@@ -135,18 +145,45 @@ static void _emitLexicalDeclaration(const Declaration * declaration) {
     EMIT(";");
 }
 
-static void _genExpressionStatement(const StatementListItem * sli) {
-    if (sli == NULL || sli->statement == NULL || sli->statement->expression == NULL) {
+static void _genExpressionStatement(const Statement * stmt) {
+    if (stmt == NULL || stmt->expression == NULL) {
         logError(_logger, "Attempt to generate output for a NULL expression statement.");
         return;
     }
+
     logDebugging(_logger, "Generating output for expression statement.");
-    genExpression(sli->statement->expression);
+    genExpression(stmt->expression);
     EMIT(";");
 }
 
-static void _emitFunctionDeclaration(const Declaration * declaration) {
-    logDebugging(_logger, "Generating output for function declaration.");
+static void _genIfStatement(const Statement * stmt) {
+    if (stmt == NULL || stmt->ifStatement == NULL) {
+        logError(_logger, "Attempt to generate output for a NULL if statement.");
+        return;
+    }
+
+    logDebugging(_logger, "Generating output for if statement.");
+    EMIT("if(");
+    genExpression(stmt->ifStatement->condition);
+    EMIT(")");
+    _genStatement(stmt->ifStatement->thenStatement);
+
+    if (stmt->ifStatement->elseStatement != NULL) {
+        EMIT("else");
+        _genStatement(stmt->ifStatement->elseStatement);
+    }
+}
+
+static void _genBlockStatement(const Statement * st) {
+    if (st == NULL || st->block == NULL) {
+        logError(_logger, "Attempt to generate output for a NULL block statement.");
+        return;
+    }
+
+    logDebugging(_logger, "Generating output for block statement.");
+    EMIT("{");
+    _genStatementList(st->block);
+    EMIT("}");
 }
 
 /**

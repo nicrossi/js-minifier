@@ -10,9 +10,4 @@ void shutdownExpressionGeneratorModule();
 
 void genExpression(Expression * expression);
 
-void emitIdentifier(Expression * expression);
-void emitString(Expression * expression);
-void emitInteger(Expression * expression);
-void emitAssignment(Expression * expression);
-
 #endif
