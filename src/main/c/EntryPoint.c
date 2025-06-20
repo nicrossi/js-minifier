@@ -7,6 +7,7 @@
 #include "shared/Environment.h"
 #include "shared/Logger.h"
 #include "shared/String.h"
+#include "backend/code-generation/Generator.h"
 
 /**
  * The main entry-point of the entire application. If you use "strtok" to
@@ -19,7 +20,7 @@ const int main(const int count, const char ** arguments) {
 	initializeBisonActionsModule();
 	initializeSyntacticAnalyzerModule();
 	initializeAbstractSyntaxTreeModule();
-//	initializeGeneratorModule();
+	initializeGeneratorModule();
 
 	// Logs the arguments of the application.
 	for (int k = 0; k < count; ++k) {
@@ -41,8 +42,7 @@ const int main(const int count, const char ** arguments) {
 	if (syntacticAnalysisStatus == ACCEPT) {
 		// ----------------------------------------------------------------------------------------
 		// Beginning of the Backend... ------------------------------------------------------------
-        logInformation(logger, "Syntactic-analysis phase: Input program ACCEPTED.");
-		logInformation(logger, "All done for now... stage-3 isn't ready yet!");
+        generate(&compilerState);
 		// ...end of the Backend. -----------------------------------------------------------------
 		// ----------------------------------------------------------------------------------------
 	}
@@ -53,7 +53,7 @@ const int main(const int count, const char ** arguments) {
 	logDebugging(logger, "Releasing AST resources...");
 	releaseProgram(program);
 	logDebugging(logger, "Releasing modules resources...");
-//	shutdownGeneratorModule();
+	shutdownGeneratorModule();
 	shutdownAbstractSyntaxTreeModule();
 	shutdownSyntacticAnalyzerModule();
 	shutdownBisonActionsModule();
