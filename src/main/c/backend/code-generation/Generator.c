@@ -56,7 +56,7 @@ static const StatementGenFn _statementGenTable[] = {
         [EXPRESSION_STATEMENT] = _genExpressionStatement,
 //        [FOR_STATEMENT] = _genForStatement,
         [IF_STATEMENT] = _genIfStatement,
-//        [RETURN_STATEMENT] = _genReturnStatement,
+        [RETURN_STATEMENT] = _genReturnStatement,
 //        [THROW_STATEMENT] = _genThrowStatement,
 //        [TRY_STATEMENT] = _genTryStatement,
 //        [SWITCH_STATEMENT] = _genSwitchStatement,
@@ -66,7 +66,7 @@ static const StatementGenFn _statementGenTable[] = {
 static const DeclarationGenFn _declarationGenTable[] = {
         // [DeclarationType] = handlerFunction
         [LEXICAL] = _emitLexicalDeclaration,
-//        [FUNCTION] = _emitFunctionDeclaration,
+        [FUNCTION] = _emitFunctionDeclaration,
 };
 
 /* Generates the output of the program. */
@@ -145,6 +145,28 @@ static void _emitLexicalDeclaration(const Declaration * declaration) {
     EMIT(";");
 }
 
+static void _emitFunctionDeclaration(const Declaration * declaration) {
+    if (declaration == NULL || declaration->functionDeclaration == NULL) {
+        logError(_logger, "Attempt to generate output for a NULL function declaration.");
+        return;
+    }
+
+    logDebugging(_logger, "Generating output for function declaration.");
+    EMIT("function %s(", declaration->functionDeclaration->identifier);
+
+    VariableDeclaratorList * paramList = declaration->functionDeclaration->parameterList;
+    for (const VariableDeclarator * vd = paramList->head; vd; vd = vd->next) {
+        EMIT("%s", vd->identifier);
+        if (vd->next != NULL) {
+            EMIT(",");
+        }
+    }
+
+    EMIT("){");
+    _genStatementList(declaration->functionDeclaration->body);
+    EMIT("}");
+}
+
 static void _genExpressionStatement(const Statement * stmt) {
     if (stmt == NULL || stmt->expression == NULL) {
         logError(_logger, "Attempt to generate output for a NULL expression statement.");
@@ -172,6 +194,18 @@ static void _genIfStatement(const Statement * stmt) {
         EMIT("else");
         _genStatement(stmt->ifStatement->elseStatement);
     }
+}
+
+static void _genReturnStatement(const Statement * stmt) {
+    if (stmt == NULL || stmt->expression == NULL) {
+        logError(_logger, "Attempt to generate output for a NULL return statement.");
+        return;
+    }
+
+    logDebugging(_logger, "Generating output for return statement.");
+    EMIT("return ");
+    genExpression(stmt->expression);
+    EMIT(";");
 }
 
 static void _genBlockStatement(const Statement * st) {
