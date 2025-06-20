@@ -19,7 +19,7 @@ typedef void (* ExpressionGenFn) (Expression * expression);
 static const ExpressionGenFn _expressionGenTable[] = {
         // [ExpressionType] = handlerFunction
 //        [ARRAY_LITERAL_EXPRESSION] = _emitArrayLiteral,
-//        [ASSIGNMENT] = _emitAssignment,
+        [ASSIGNMENT] = emitAssignment,
 //        [BOOLEAN_LITERAL_EXPRESSION] = _emitBooleanLiteral,
 //        [CALL_EXPRESSION] = _emit,
 //        [DIVISION_EXPRESSION] = _emit,
@@ -62,6 +62,19 @@ void genExpression(Expression * expression) {
     (expression->type < ARRAY_LEN(_expressionGenTable) && _expressionGenTable[expression->type] != NULL)
     ? _expressionGenTable[expression->type](expression)
     : logError(_logger, "Unknown expression type: %d", expression->type);
+}
+
+void emitAssignment(Expression * expression) {
+    if (expression == NULL ||(expression->binaryExpression.leftExpression == NULL
+        && expression->binaryExpression.rightExpression == NULL)) {
+        logError(_logger, "Attempt to generate output for a NULL assignment expression.");
+        return;
+    }
+
+    logDebugging(_logger, "Generating output for assignment expression.");
+    genExpression(expression->binaryExpression.leftExpression);
+    EMIT("=");
+    genExpression(expression->binaryExpression.rightExpression);
 }
 
 void emitIdentifier(Expression * expression) {

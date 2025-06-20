@@ -33,7 +33,7 @@ static void _genBreakStatement(const Statement * st);
 static void _genContinueStatement(const Statement * st);
 static void _genDeclarationStatement(const StatementListItem * sli);
 static void _genDoWhileStatement(const Statement * st);
-static void _genExpressionStatement(const Statement * st);
+static void _genExpressionStatement(const StatementListItem * sli);
 static void _genForStatement(const Statement * st);
 static void _genIfStatement(const Statement * st);
 static void _genReturnStatement(const Statement * st);
@@ -53,7 +53,7 @@ static const StatementGenFn _statementGenTable[] = {
 //        [CONTINUE_STATEMENT] = _genContinueStatement,
         [DECLARATION_STATEMENT] = _genDeclarationStatement,
 //        [DO_WHILE_STATEMENT] = _genDoWhileStatement,
-//        [EXPRESSION_STATEMENT] = _genExpressionStatement,
+        [EXPRESSION_STATEMENT] = _genExpressionStatement,
 //        [FOR_STATEMENT] = _genForStatement,
 //        [IF_STATEMENT] = _genIfStatement,
 //        [RETURN_STATEMENT] = _genReturnStatement,
@@ -132,6 +132,16 @@ static void _emitLexicalDeclaration(const Declaration * declaration) {
         }
     }
 
+    EMIT(";");
+}
+
+static void _genExpressionStatement(const StatementListItem * sli) {
+    if (sli == NULL || sli->statement == NULL || sli->statement->expression == NULL) {
+        logError(_logger, "Attempt to generate output for a NULL expression statement.");
+        return;
+    }
+    logDebugging(_logger, "Generating output for expression statement.");
+    genExpression(sli->statement->expression);
     EMIT(";");
 }
 
