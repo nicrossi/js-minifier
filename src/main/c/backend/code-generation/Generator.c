@@ -25,6 +25,7 @@ typedef void (* DeclarationGenFn) (const Declaration * declaration);
 static void _genProgram(Program * program);
 static char * _indentation(const unsigned int indentationLevel);
 
+static void _genStatementListRec(const StatementListItem * it);
 static void _genStatementList(const StatementList * statementList);
 static void _genStatementListItem(const StatementListItem * sli);
 static void _genStatement(const Statement * stmt);
@@ -39,9 +40,11 @@ static void _genIfStatement(const Statement * st);
 static void _genReturnStatement(const Statement * st);
 static void _genThrowStatement(const Statement * st);
 static void _genTryStatement(const Statement * st);
-static void _genSwitchStatement(const Statement * st);
+static void _genSwitchStatement(const Statement * stmt);
 static void _genWhileStatement(const Statement * st);
-
+static void _genCaseClauses(const CaseClause * clause);
+static void _emitVariableDeclarators(const VariableDeclarator * vd);
+static void _emitFunctionParameters(const VariableDeclarator * vd);
 static void _emitDeclaration(const Declaration * declaration);
 static void _emitLexicalDeclaration(const Declaration * declaration);
 static void _emitFunctionDeclaration(const Declaration * declaration);
@@ -59,7 +62,7 @@ static const StatementGenFn _statementGenTable[] = {
         [RETURN_STATEMENT] = _genReturnStatement,
 //        [THROW_STATEMENT] = _genThrowStatement,
 //        [TRY_STATEMENT] = _genTryStatement,
-//        [SWITCH_STATEMENT] = _genSwitchStatement,
+        [SWITCH_STATEMENT] = _genSwitchStatement,
         [WHILE_STATEMENT] = _genWhileStatement
 };
 
@@ -75,10 +78,14 @@ static void _genProgram(Program * program) {
 }
 
 /* Generates the output of a statement list. */
+static void _genStatementListRec(const StatementListItem * it) {
+    if (it == NULL) return;
+    _genStatementListItem(it);
+    _genStatementListRec(it->next);
+}
+
 static void _genStatementList(const StatementList * statementList) {
-    for (const StatementListItem * it = statementList->head; it; it = it->next) {
-        _genStatementListItem(it);
-    }
+    _genStatementListRec(statementList->head);
 }
 
 /* Generate declaration statement */
@@ -93,11 +100,6 @@ static void _genDeclarationStatement(const StatementListItem * sli) {
 
 /* Generates the output of a statement. */
 static void _genStatementListItem(const StatementListItem * sli) {
-    if (sli == NULL) {
-        logDebugging(_logger, "Attempt to generate output for a NULL statement.");
-        return;
-    }
-
     logDebugging(_logger, "Generating output for statement of type: %d", sli->type);
     if (sli->type >= 0 && sli->type < ARRAY_LEN(_statementGenTable)) {
         sli->type == DECLARATION_STATEMENT
@@ -121,6 +123,19 @@ static void _emitDeclaration(const Declaration * declaration) {
         : logError(_logger, "Unknown declaration type: %d", declaration->type);
 }
 
+static void _emitVariableDeclarators(const VariableDeclarator * vd) {
+    if (vd == NULL) return;
+    EMIT("%s", vd->identifier);
+    if (vd->initializer != NULL) {
+        EMIT("=");
+        genExpression(vd->initializer);
+    }
+    if (vd->next != NULL) {
+        EMIT(",");
+        _emitVariableDeclarators(vd->next);
+    }
+}
+
 static void _emitLexicalDeclaration(const Declaration * declaration) {
     if (declaration == NULL || declaration->lexicalDeclaration == NULL) {
         logError(_logger, "Attempt to generate output for a NULL lexical declaration.");
@@ -131,18 +146,18 @@ static void _emitLexicalDeclaration(const Declaration * declaration) {
     EMIT("%s ", keyword);
 
     VariableDeclaratorList * declaratorList = declaration->lexicalDeclaration->declaratorList;
-    for (const VariableDeclarator * vd = declaratorList->head; vd; vd = vd->next) {
-        EMIT("%s", vd->identifier);
-        if (vd->initializer != NULL) {
-            EMIT("=");
-            genExpression(vd->initializer);
-        }
-        if (vd->next != NULL) {
-            EMIT(",");
-        }
-    }
+    _emitVariableDeclarators(declaratorList->head);
 
     EMIT(";");
+}
+
+static void _emitFunctionParameters(const VariableDeclarator * vd) {
+    if (vd == NULL) return;
+    EMIT("%s", vd->identifier);
+    if (vd->next != NULL) {
+        EMIT(",");
+        _emitFunctionParameters(vd->next);
+    }
 }
 
 static void _emitFunctionDeclaration(const Declaration * declaration) {
@@ -155,12 +170,7 @@ static void _emitFunctionDeclaration(const Declaration * declaration) {
     EMIT("function %s(", declaration->functionDeclaration->identifier);
 
     VariableDeclaratorList * paramList = declaration->functionDeclaration->parameterList;
-    for (const VariableDeclarator * vd = paramList->head; vd; vd = vd->next) {
-        EMIT("%s", vd->identifier);
-        if (vd->next != NULL) {
-            EMIT(",");
-        }
-    }
+    _emitFunctionParameters(paramList->head);
 
     EMIT("){");
     _genStatementList(declaration->functionDeclaration->body);
@@ -255,6 +265,33 @@ static void _genWhileStatement(const Statement * st) {
     genExpression(st->whileStatement->condition);
     EMIT(")");
     _genStatement(st->whileStatement->body);
+}
+
+static void _genCaseClauses(const CaseClause * clause) {
+    if (clause == NULL) return;
+    if (clause->type == CASE_CLAUSE) {
+        EMIT("case ");
+        genExpression(clause->test);
+        EMIT(":");
+    } else {
+        EMIT("default:");
+    }
+    _genStatementList(clause->body);
+    _genCaseClauses(clause->next);
+}
+
+static void _genSwitchStatement(const Statement * stmt) {
+    if (stmt == NULL || stmt->switchStatement == NULL) {
+        logError(_logger, "Attempt to generate output for a NULL switch statement.");
+        return;
+    }
+
+    logDebugging(_logger, "Generating output for switch statement.");
+    EMIT("switch(");
+    genExpression(stmt->switchStatement->discriminant);
+    EMIT("){");
+    _genCaseClauses(stmt->switchStatement->cases);
+    EMIT("}");
 }
 
 
