@@ -49,10 +49,10 @@ static void _emitFunctionDeclaration(const Declaration * declaration);
 static const StatementGenFn _statementGenTable[] = {
         // [StatementType] = handlerFunction
         [BLOCK_STATEMENT] = _genBlockStatement,
-//        [BREAK_STATEMENT] = _genBreakStatement,
-//        [CONTINUE_STATEMENT] = _genContinueStatement,
+        [BREAK_STATEMENT] = _genBreakStatement,
+        [CONTINUE_STATEMENT] = _genContinueStatement,
         [DECLARATION_STATEMENT] = NULL, // Handled separately
-//        [DO_WHILE_STATEMENT] = _genDoWhileStatement,
+        [DO_WHILE_STATEMENT] = _genDoWhileStatement,
         [EXPRESSION_STATEMENT] = _genExpressionStatement,
 //        [FOR_STATEMENT] = _genForStatement,
         [IF_STATEMENT] = _genIfStatement,
@@ -60,7 +60,7 @@ static const StatementGenFn _statementGenTable[] = {
 //        [THROW_STATEMENT] = _genThrowStatement,
 //        [TRY_STATEMENT] = _genTryStatement,
 //        [SWITCH_STATEMENT] = _genSwitchStatement,
-//        [WHILE_STATEMENT] = _genWhileStatement
+        [WHILE_STATEMENT] = _genWhileStatement
 };
 
 static const DeclarationGenFn _declarationGenTable[] = {
@@ -219,6 +219,44 @@ static void _genBlockStatement(const Statement * st) {
     _genStatementList(st->block);
     EMIT("}");
 }
+
+static void _genBreakStatement(const Statement * st) {
+    logDebugging(_logger, "Generating output for break statement.");
+    EMIT("break;");
+}
+
+static void _genContinueStatement(const Statement * st) {
+    logDebugging(_logger, "Generating output for continue statement.");
+    EMIT("continue;");
+}
+
+static void _genDoWhileStatement(const Statement * st) {
+    if (st == NULL || st->whileStatement == NULL) {
+        logError(_logger, "Attempt to generate output for a NULL do-while statement.");
+        return;
+    }
+
+    logDebugging(_logger, "Generating output for do-while statement.");
+    EMIT("do");
+    _genStatement(st->whileStatement->body);
+    EMIT("while(");
+    genExpression(st->whileStatement->condition);
+    EMIT(");");
+}
+
+static void _genWhileStatement(const Statement * st) {
+    if (st == NULL || st->whileStatement == NULL) {
+        logError(_logger, "Attempt to generate output for a NULL while statement.");
+        return;
+    }
+
+    logDebugging(_logger, "Generating output for while statement.");
+    EMIT("while(");
+    genExpression(st->whileStatement->condition);
+    EMIT(")");
+    _genStatement(st->whileStatement->body);
+}
+
 
 /**
  * Generates an indentation string for the specified level.
