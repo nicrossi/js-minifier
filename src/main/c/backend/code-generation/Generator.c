@@ -60,8 +60,8 @@ static const StatementGenFn _statementGenTable[] = {
 //        [FOR_STATEMENT] = _genForStatement,
         [IF_STATEMENT] = _genIfStatement,
         [RETURN_STATEMENT] = _genReturnStatement,
-//        [THROW_STATEMENT] = _genThrowStatement,
-//        [TRY_STATEMENT] = _genTryStatement,
+        [THROW_STATEMENT] = _genThrowStatement,
+        [TRY_STATEMENT] = _genTryStatement,
         [SWITCH_STATEMENT] = _genSwitchStatement,
         [WHILE_STATEMENT] = _genWhileStatement
 };
@@ -294,6 +294,43 @@ static void _genSwitchStatement(const Statement * stmt) {
     EMIT("}");
 }
 
+static void _genThrowStatement(const Statement * st) {
+    if (st == NULL || st->expression == NULL) {
+        logError(_logger, "Attempt to generate output for a NULL throw statement.");
+        return;
+    }
+
+    logDebugging(_logger, "Generating output for throw statement.");
+    EMIT("throw ");
+    genExpression(st->expression);
+    EMIT(";");
+}
+
+static void _genTryStatement(const Statement * st) {
+    if (st == NULL || st->tryStatement == NULL) {
+        logError(_logger, "Attempt to generate output for a NULL try statement.");
+        return;
+    }
+
+    logDebugging(_logger, "Generating output for try statement.");
+    EMIT("try{");
+    _genStatementList(st->tryStatement->tryBlock);
+    EMIT("}");
+    if (st->tryStatement->catchClause != NULL) {
+        EMIT("catch(");
+        if (st->tryStatement->catchClause->identifier != NULL) {
+            EMIT("%s", st->tryStatement->catchClause->identifier);
+        }
+        EMIT("){");
+        _genStatementList(st->tryStatement->catchClause->block);
+        EMIT("}");
+    }
+    if (st->tryStatement->finallyClause != NULL) {
+        EMIT("finally{");
+        _genStatementList(st->tryStatement->finallyClause->block);
+        EMIT("}");
+    }
+}
 
 /**
  * Generates an indentation string for the specified level.
