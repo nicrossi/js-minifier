@@ -146,7 +146,7 @@ for dir in "$TEST_ROOT"/*/; do
     fi
 
     base=$(basename "${when_file[0]}" .when)
-    output="$("$COMPILER" < "${when_file[0]}" 2>&1)"
+    output="$(LOGGING_LEVEL=ERROR LOG_IGNORED_LEXEMES=false "$COMPILER" < "${when_file[0]}" 2>&1)"
     diff_output=$(diff -u --label "${expect_file[0]}" \
                   "${expect_file[0]}" <(printf '%s\n' "$output") || true)
 
