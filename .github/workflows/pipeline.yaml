@@ -18,6 +18,9 @@ jobs:
       - name: "Test solution."
         run: |
           script/ubuntu/test.sh
+      - name: "Integration When/Expect test-suite."
+        run: |
+          script/ubuntu/test-suite.sh    
 
 name: "CI"
 
