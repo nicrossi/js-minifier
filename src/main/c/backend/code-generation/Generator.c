@@ -44,9 +44,9 @@ static void _genSwitchStatement(const Statement * stmt);
 static void _genWhileStatement(const Statement * st);
 static void _genCaseClauses(const CaseClause * clause);
 static void _emitVariableDeclarators(const VariableDeclarator * vd);
-static void _emitFunctionParameters(const VariableDeclarator * vd);
 static void _emitDeclaration(const Declaration * declaration);
-static void _emitLexicalDeclaration(const Declaration * declaration);
+static void _wprEmitLexicalDeclaration(const Declaration * declaration);
+static void _emitLexicalDeclaration(const LexicalDeclaration * lexicalDeclaration);
 static void _emitFunctionDeclaration(const Declaration * declaration);
 
 static const StatementGenFn _statementGenTable[] = {
@@ -57,7 +57,7 @@ static const StatementGenFn _statementGenTable[] = {
         [DECLARATION_STATEMENT] = NULL, // Handled separately
         [DO_WHILE_STATEMENT] = _genDoWhileStatement,
         [EXPRESSION_STATEMENT] = _genExpressionStatement,
-//        [FOR_STATEMENT] = _genForStatement,
+        [FOR_STATEMENT] = _genForStatement,
         [IF_STATEMENT] = _genIfStatement,
         [RETURN_STATEMENT] = _genReturnStatement,
         [THROW_STATEMENT] = _genThrowStatement,
@@ -68,7 +68,7 @@ static const StatementGenFn _statementGenTable[] = {
 
 static const DeclarationGenFn _declarationGenTable[] = {
         // [DeclarationType] = handlerFunction
-        [LEXICAL] = _emitLexicalDeclaration,
+        [LEXICAL] = _wprEmitLexicalDeclaration,
         [FUNCTION] = _emitFunctionDeclaration,
 };
 
@@ -136,28 +136,21 @@ static void _emitVariableDeclarators(const VariableDeclarator * vd) {
     }
 }
 
-static void _emitLexicalDeclaration(const Declaration * declaration) {
+static void _wprEmitLexicalDeclaration(const Declaration * declaration) {
     if (declaration == NULL || declaration->lexicalDeclaration == NULL) {
         logError(_logger, "Attempt to generate output for a NULL lexical declaration.");
         return;
     }
     logDebugging(_logger, "Generating output for lexical declaration.");
-    const char * keyword = (declaration->lexicalDeclaration->type == LET_DECLARATION) ? "let" : "const";
-    EMIT("%s ", keyword);
-
-    VariableDeclaratorList * declaratorList = declaration->lexicalDeclaration->declaratorList;
-    _emitVariableDeclarators(declaratorList->head);
-
-    EMIT(";");
+    _emitLexicalDeclaration(declaration->lexicalDeclaration);
 }
 
-static void _emitFunctionParameters(const VariableDeclarator * vd) {
-    if (vd == NULL) return;
-    EMIT("%s", vd->identifier);
-    if (vd->next != NULL) {
-        EMIT(",");
-        _emitFunctionParameters(vd->next);
-    }
+static void _emitLexicalDeclaration(const LexicalDeclaration * lexicalDeclaration) {
+    const char * keyword = (lexicalDeclaration->type == LET_DECLARATION) ? "let" : "const";
+    EMIT("%s ", keyword);
+    VariableDeclaratorList * declaratorList = lexicalDeclaration->declaratorList;
+    _emitVariableDeclarators(declaratorList->head);
+    EMIT(";");
 }
 
 static void _emitFunctionDeclaration(const Declaration * declaration) {
@@ -168,10 +161,8 @@ static void _emitFunctionDeclaration(const Declaration * declaration) {
 
     logDebugging(_logger, "Generating output for function declaration.");
     EMIT("function %s(", declaration->functionDeclaration->identifier);
-
     VariableDeclaratorList * paramList = declaration->functionDeclaration->parameterList;
-    _emitFunctionParameters(paramList->head);
-
+    _emitVariableDeclarators(paramList->head);
     EMIT("){");
     _genStatementList(declaration->functionDeclaration->body);
     EMIT("}");
@@ -330,6 +321,38 @@ static void _genTryStatement(const Statement * st) {
         _genStatementList(st->tryStatement->finallyClause->block);
         EMIT("}");
     }
+}
+
+static void _genForInitializer(const ForInitializer * initializer) {
+    switch (initializer->type) {
+        case LEXICAL_DECLARATION_FOR_INIT:
+            _emitLexicalDeclaration(initializer->lexicalDeclaration);
+            break;
+        case EXPRESSION_FOR_INIT:
+            genExpression(initializer->expression);
+            break;
+        case EMPTY_FOR_INIT:
+            EMIT(";");
+            break;
+        default:
+            logError(_logger, "Unknown for initializer type: %d", initializer->type);
+    }
+}
+
+static void _genForStatement(const Statement *st) {
+    if (!st || !st->forStatement) {
+        logError(_logger, "Attempt to generate output for a NULL for statement.");
+        return;
+    }
+
+    logDebugging(_logger, "Generating output for for statement.");
+    EMIT("for(");
+    if (st->forStatement->initializer) _genForInitializer(st->forStatement->initializer);
+    if (st->forStatement->condition) genExpression(st->forStatement->condition);
+    EMIT(";");
+    if (st->forStatement->increment) genExpression(st->forStatement->increment);
+    EMIT(")");
+    _genStatement(st->forStatement->body);
 }
 
 /**

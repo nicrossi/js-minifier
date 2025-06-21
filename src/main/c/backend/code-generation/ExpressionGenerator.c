@@ -24,6 +24,15 @@ static void _emitBinary(Expression * expression, const char * operator);
 static void _wprEmitCallExpression(Expression * expression, const char * operator);
 static void _emitCallExpression(Expression * expression);
 static void _emitArguments(const Argument * arg);
+static void _wprEmitNew(Expression * expression, const char * operator);
+static void _emitNew(Expression * expression);
+static void _wprEmitBooleanLiteral(Expression * expression, const char * operator);
+static void _emitBooleanLiteral(Expression * expression);
+static void _emitUpdateOp(Expression * expression, const char *operator);
+static void _wprEmitArrayLiteral(Expression * expression, const char * operator);
+static void _emitArrayLiteral(Expression * expression);
+static void _wprEmitSubscript(Expression * expression, const char * operator);
+static void _emitSubscript(Expression * expression);
 
 typedef void (* ExpressionGenFn) (Expression * expression, const char * operator);
 typedef struct {
@@ -34,13 +43,12 @@ typedef struct {
 
 static const ExpressionGenEntry _expressionGenTable[] = {
         // [ExpressionType] = handlerFunction
-//        [ARRAY_LITERAL_EXPRESSION] = _emitArrayLiteral,
+        [ARRAY_LITERAL_EXPRESSION] = { _wprEmitArrayLiteral, NULL },
         [ASSIGNMENT] = {_emitBinary, "=" },
-//        [BOOLEAN_LITERAL_EXPRESSION] = _emitBooleanLiteral,
+        [BOOLEAN_LITERAL_EXPRESSION] = { _wprEmitBooleanLiteral, NULL },
         [CALL_EXPRESSION] = { _wprEmitCallExpression, NULL },
         [DIVISION_EXPRESSION] = { _emitBinary, "/" },
         [EQUALITY_EXPRESSION] = {_emitBinary, "==" },
-//        [EMPTY_EXPRESSION] = _emit,
         [EXPONENTIATION_EXPRESSION] = { _emitBinary, "**" },
         [GREATER_EXPRESSION] = {_emitBinary, ">" },
         [GREAT_EQUAL_EXPRESSION] = {_emitBinary, ">=" },
@@ -53,18 +61,18 @@ static const ExpressionGenEntry _expressionGenTable[] = {
         [LOGICAL_AND_EXPRESSION] = { _emitBinary, "&&" },
         [MEMBER_EXPRESSION] = { _emitBinary, "." },
         [MULTIPLICATION_EXPRESSION] = { _emitBinary, "*" },
-//        [NEW_EXPRESSION] = _emit,
-//        [POSTFIX_INCREMENT_EXPR] = _emit,
-//        [POSTFIX_DECREMENT_EXPR] = _emit,
+        [NEW_EXPRESSION] = { _wprEmitNew, NULL },
+        [POSTFIX_INCREMENT_EXPR] = { _emitUpdateOp, "++" },
+        [POSTFIX_DECREMENT_EXPR] = { _emitUpdateOp, "--" },
         [POWER_EXPRESSION] = { _emitBinary, "^" },
-//        [PREFIX_INCREMENT_EXPR] = _emit,
-//        [PREFIX_DECREMENT_EXPR] = _emit,
+        [PREFIX_INCREMENT_EXPR] = { _emitUpdateOp, "++" },
+        [PREFIX_DECREMENT_EXPR] = { _emitUpdateOp, "--" },
         [REMAINDER_EXPRESSION] = { _emitBinary, "%" },
         [STRICT_EQUALITY_EXPRESSION] = {_emitBinary, "===" },
         [STRICT_INEQUALITY_EXPRESSION] = {_emitBinary, "!==" },
         [STRING_LITERAL_EXPRESSION] = {_wprEmitString, NULL },
         [SUB_EXPRESSION] = { _emitBinary, "-" },
-        [SUBSCRIPT_EXPRESSION] = {  _emitBinary, "[]" },
+        [SUBSCRIPT_EXPRESSION] = {  _wprEmitSubscript, NULL },
         [SUM_EXPRESSION] = { _emitBinary, "+" },
 };
 
@@ -120,7 +128,7 @@ static void _emitArguments(const Argument * arg) {
     if (arg == NULL) return;
     genExpression(arg->expression);
     if (arg->next != NULL) {
-        EMIT(", ");
+        EMIT(",");
         _emitArguments(arg->next);
     }
 }
@@ -138,4 +146,92 @@ static void _emitCallExpression(Expression * expression) {
         _emitArguments(expression->callExpression->argumentList->head);
     }
     EMIT(")");
+}
+
+static void _emitNew(Expression * expression) {
+    if (expression == NULL || expression->callExpression == NULL) {
+        logError(_logger, "Attempt to generate output for a NULL new expression.");
+        return;
+    }
+
+    logDebugging(_logger, "Generating output for new expression.");
+    EMIT("new ");
+    genExpression(expression->callExpression->callee);
+    if (expression->callExpression->argumentList != NULL) {
+        EMIT("(");
+        _emitArguments(expression->callExpression->argumentList->head);
+        EMIT(")");
+    }
+}
+
+static void _wprEmitNew(Expression * expression, const char * operator) {
+    _emitNew(expression);
+}
+
+static void _wprEmitBooleanLiteral(Expression * expression, const char * operator) {
+    _emitBooleanLiteral(expression);
+}
+
+static void _emitBooleanLiteral(Expression * expression) {
+    if (expression == NULL) {
+        logError(_logger, "Attempt to generate output for a NULL boolean literal expression.");
+        return;
+    }
+    EMIT("%s", expression->value ? "true" : "false");
+}
+
+static void _emitUpdateOp(Expression * expression, const char * operator) {
+    if (!expression || !expression->updateOp) {
+        logError(_logger, "Attempt to generate output for a NULL update expression.");
+        return;
+    }
+
+    if (operator == NULL) {
+        logError(_logger, "Operator string is NULL in _emitUpdateOp.");
+        return;
+    }
+
+    if (expression->updateOp->isPostfix) {
+        genExpression(expression->updateOp->operand);
+        EMIT("%s", operator);
+    } else {
+        EMIT("%s", operator);
+        genExpression(expression->updateOp->operand);
+    }
+}
+
+static void _emitArrayLiteral(Expression * expression) {
+    if (expression == NULL || expression->callExpression == NULL) {
+        logError(_logger, "Attempt to generate output for a NULL array literal expression.");
+        return;
+    }
+
+    logDebugging(_logger, "Generating output for array literal expression.");
+    EMIT("[");
+    if (expression->callExpression->argumentList != NULL) {
+        _emitArguments(expression->callExpression->argumentList->head);
+    }
+    EMIT("]");
+}
+
+static void _wprEmitArrayLiteral(Expression * expression, const char * operator) {
+    _emitArrayLiteral(expression);
+}
+
+static void _wprEmitSubscript(Expression * expression, const char * operator) {
+    _emitSubscript(expression);
+}
+
+static void _emitSubscript(Expression * expression) {
+    if (expression == NULL || expression->binaryExpression.leftExpression == NULL
+        || expression->binaryExpression.rightExpression == NULL) {
+        logError(_logger, "Attempt to generate output for a NULL subscript expression.");
+        return;
+    }
+
+    logDebugging(_logger, "Generating output for subscript expression.");
+    genExpression(expression->binaryExpression.leftExpression);
+    EMIT("[");
+    genExpression(expression->binaryExpression.rightExpression);
+    EMIT("]");
 }
