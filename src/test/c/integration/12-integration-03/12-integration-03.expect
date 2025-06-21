@@ -1,0 +1,1 @@
+function pow2(n=4){const result=n**2;return result;}function produce(v){const obj=new Number(v);return obj;}function process(limit=5){let acc=0;for(let i=0;i<limit;i++){acc=acc+pow2(i);}return acc;}let total=0;try{const value=process(3);total=total+produce(value);if(total===0){throw total;}}catch(err){total=total-1;}total++;--total;
