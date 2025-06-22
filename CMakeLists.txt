@@ -69,6 +69,9 @@ add_executable(Compiler
 	src/main/c/shared/String.c
 	src/main/c/shared/ecalloc.c
 	src/main/c/backend/code-generation/ExpressionGenerator.c
+	src/main/c/backend/semantic-analysis/SymbolTable.c
+	src/main/c/shared/djb2.c
+	src/main/c/backend/semantic-analysis/SemanticAnalyzer.c
 		# Add more *.c files if needed (otherwise, they won't be compiled).
 	# ...
 )
