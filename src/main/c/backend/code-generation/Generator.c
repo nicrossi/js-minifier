@@ -125,7 +125,9 @@ static void _emitDeclaration(const Declaration * declaration) {
 
 static void _emitVariableDeclarators(const VariableDeclarator * vd) {
     if (vd == NULL) return;
-    EMIT("%s", vd->identifier);
+    const SymbolInfo * info = stLookup(getSymbolTable(), vd->identifier);
+    const char * id = info && info->minifiedName ? info->minifiedName : vd->identifier;
+    EMIT("%s", id);
     if (vd->initializer != NULL) {
         EMIT("=");
         genExpression(vd->initializer);
@@ -160,7 +162,9 @@ static void _emitFunctionDeclaration(const Declaration * declaration) {
     }
 
     logDebugging(_logger, "Generating output for function declaration.");
-    EMIT("function %s(", declaration->functionDeclaration->identifier);
+    const SymbolInfo * info = stLookup(getSymbolTable(), declaration->functionDeclaration->identifier);
+    const char * id = info && info->minifiedName ? info->minifiedName : declaration->functionDeclaration->identifier;
+    EMIT("function %s(", id);
     VariableDeclaratorList * paramList = declaration->functionDeclaration->parameterList;
     _emitVariableDeclarators(paramList->head);
     EMIT("){");

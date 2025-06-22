@@ -4,6 +4,9 @@
 #include "../../frontend/syntactic-analysis/AbstractSyntaxTree.h"
 #include "../../shared/Logger.h"
 #include "../../shared/Utils.h"
+#include "../semantic-analysis/SymbolTable.h"
+#include "../semantic-analysis/SemanticAnalyzer.h"
+#include "Generator.h"
 
 void initializeExpressionGeneratorModule();
 void shutdownExpressionGeneratorModule();

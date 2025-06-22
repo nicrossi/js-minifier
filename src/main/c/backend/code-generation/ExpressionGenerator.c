@@ -1,5 +1,4 @@
 #include "ExpressionGenerator.h"
-#include "Generator.h"
 
 /* MODULE INTERNAL STATE */
 static Logger * _logger = NULL;
@@ -105,7 +104,10 @@ static void _wprEmitIdentifier(Expression * expression, const char * operator) {
 
 static void _emitIdentifier(Expression * expression) {
     logDebugging(_logger, "Generating output for identifier expression with name: \"%s\"", expression->identifierName);
-    EMIT("%s", expression->identifierName);
+    const SymbolTable * symbolTable = getSymbolTable();
+    const SymbolInfo * info = stLookup(symbolTable, expression->identifierName);
+    const char * out = info && info->minifiedName ? info->minifiedName : expression->identifierName;
+    EMIT("%s", out);
 }
 
 static void _wprEmitInteger(Expression * expression, const char * operator) { _emitInteger(expression); }

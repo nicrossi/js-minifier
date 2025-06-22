@@ -1,1 +1,1 @@
-function pow2(n=4){const result=n**2;return result;}function produce(v){const obj=new Number(v);return obj;}function process(limit=5){let acc=0;for(let i=0;i<limit;i++){acc=acc+pow2(i);}return acc;}let total=0;try{const value=process(3);total=total+produce(value);if(total===0){throw total;}}catch(err){total=total-1;}total++;--total;
+function a(b=4){const c=b**2;return c;}function d(e){const f=new Number(e);return f;}function g(h=5){let i=0;for(let j=0;j<h;j++){i=i+a(j);}return i;}let k=0;try{const l=g(3);k=k+d(l);if(k===0){throw k;}}catch(err){k=k-1;}k++;--k;

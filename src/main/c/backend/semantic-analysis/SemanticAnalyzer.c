@@ -147,6 +147,11 @@ bool validateProgram(const Program * program) {
     return _ok;
 }
 
+const SymbolTable * getSymbolTable(void) {
+    assert(_symTable && "SemanticAnalyzer not initialised");
+    return _symTable;
+}
+
 /* Private functions */
 
 static void _checkProgram(const Program * p) {

@@ -17,6 +17,7 @@ typedef enum {
 /* Metadata that the semantic analyser stores for each identifier. */
 typedef struct {
     SymKind kind;
+    char * minifiedName;
 } SymbolInfo;
 
 typedef struct SymbolTable SymbolTable;

@@ -1,0 +1,5 @@
+function multiply(longName, other) {
+  const result = longName * other;
+  return result;
+}
+let x = multiply(4, 5);

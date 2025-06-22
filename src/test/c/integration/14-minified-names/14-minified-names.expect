@@ -1,0 +1,1 @@
+function a(b,c){const d=b*c;return d;}let e=a(4,5);

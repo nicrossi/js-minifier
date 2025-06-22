@@ -1,5 +1,7 @@
 #include "SymbolTable.h"
 
+#define MIN_NAMES 32
+
 /* Hash-table entry */
 typedef struct Entry {
     char * name;          // identifier name
@@ -30,6 +32,7 @@ static void _frameDestroy(Frame * f) {
         while (e) {
             Entry *next = e->next;
             free(e->name);
+            free(e->info.minifiedName);
             free(e);
             e = next;
         }
@@ -59,6 +62,47 @@ static bool _entryExists(Entry * entry, const char * name) {
     return _entryExists(entry->next, name);
 }
 
+/*
+ * The function _nextMinifiedName generates a unique,
+ * incrementing string identifier using a base-26 encoding scheme.
+ * starting with "a", "b", ..., "z", then "aa", "ab", and so on.
+ *
+ * Note: Because each scope has its own frame, two different functions
+ * can both obtain the name a for their private local variables
+ * */
+static char * _nextMinifiedName(void) {
+    static unsigned long counter = 0;
+    char buf[MIN_NAMES];
+    unsigned long n = counter++;
+    size_t i = 0;
+    do { // base-26
+        buf[i++] = 'a' + (char)(n % 26);
+        n /= 26;
+    } while (n);
+    buf[i] = '\0';
+    return strdup(buf);
+}
+
+/*
+ * Because the entries are freed when a scope ends, by the time code-generation
+ * tries to look up some identifier, it can only find those that lived in the global frame.
+ *
+ * Prepend child's bucket-chain onto parent
+ * */
+static void _adoptEntries(Frame * parent, Frame * child) {
+    for (size_t i = 0; i < BUCKET_SIZE; ++i) {
+        if (!child->bucket[i]) continue;
+
+        Entry * tail = child->bucket[i];
+        while (tail->next) {
+            tail = tail->next;
+        }
+        tail->next = parent->bucket[i];
+        parent->bucket[i] = child->bucket[i];
+        child->bucket[i] = NULL;
+    }
+}
+
 /* Public Functions */
 
 SymbolTable * stCreate(void) {
@@ -85,9 +129,11 @@ void stExitScope(SymbolTable * st) {
         // Trying to pop the global scope – ignore
         return;
     }
-    Frame * tmp = st->top->parent;
+    Frame * child = st->top;
+    Frame * parent = child->parent;
+    _adoptEntries(parent, child);
     _frameDestroy(st->top);
-    st->top = tmp;
+    st->top = parent;
 }
 
 bool stInsert(SymbolTable * st, const char * name, SymKind kind) {
@@ -98,6 +144,7 @@ bool stInsert(SymbolTable * st, const char * name, SymKind kind) {
 
     Entry * newEntry = ecalloc(1, sizeof *newEntry);
     newEntry->name = strdup(name);
+    newEntry->info.minifiedName = _nextMinifiedName();
     newEntry->info.kind = kind;
     newEntry->next = st->top->bucket[h];
     st->top->bucket[h] = newEntry;

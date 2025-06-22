@@ -1,1 +1,1 @@
-const arr=[1,2,3,4];const obj=new Point(arr[0],arr[1]);let ok=obj.valid&&obj.x>0||obj["y"]>0;
+const a=[1,2,3,4];const b=new Point(a[0],a[1]);let c=b.valid&&b.x>0||b["y"]>0;

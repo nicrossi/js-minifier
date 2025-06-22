@@ -12,7 +12,7 @@
 
 void initializeSemanticAnalyzerModule(void);
 void shutdownSemanticAnalyzerModule(void);
-
+const SymbolTable * getSymbolTable(void);
 bool validateProgram(const Program * program);
 
 #endif
