@@ -7,11 +7,12 @@
 #include "SymbolTable.h"
 #include <assert.h>
 #include <stddef.h>
+#include <math.h>
 
 
 void initializeSemanticAnalyzerModule(void);
 void shutdownSemanticAnalyzerModule(void);
 
-boolean validateProgram(const Program * program);
+bool validateProgram(const Program * program);
 
 #endif

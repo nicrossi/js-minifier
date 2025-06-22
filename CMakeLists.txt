@@ -77,4 +77,4 @@ add_executable(Compiler
 )
 
 # Link final project and libraries.
-target_link_libraries(Compiler)
+target_link_libraries(Compiler m)

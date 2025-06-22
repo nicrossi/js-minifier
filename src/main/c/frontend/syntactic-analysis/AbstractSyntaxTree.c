@@ -89,7 +89,7 @@ void releaseExpression(Expression * expression) { //NOLINT
                     expression->callExpression = NULL;
                 }
                 break;
-            case INTEGER_EXPRESSION:
+                case INTEGER_EXPRESSION: case BOOLEAN_LITERAL_EXPRESSION:
                 // No need to release anything, as the integer is a primitive type.
                 break;
             default:

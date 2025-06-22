@@ -2,49 +2,77 @@
 
 static Logger * _logger = NULL;
 static SymbolTable * _symTable = NULL;
-static boolean _ok = true;        /* pessimistic-fail flag */
+static bool _ok = true;        /* pessimistic-fail flag */
 
 #define ERR(fmt, ...)  do{ logError   (_logger, fmt, ##__VA_ARGS__); _ok = false; }while(0)
 
 typedef void (* StatementHandler)(const Statement * stmt);
 
-typedef void (* ExpressionHandler)(const Expression * expression);
+typedef bool (* ExpressionHandler)(Expression * expression);
 
 static void _checkProgram(const Program * program);
+
 static void _checkStatementList(const StatementList * statementList);
+
 static void _checkStatementListItem(const StatementListItem * it);
+
 static void _checkStatementListRec(const StatementListItem * it);
+
 static void _checkStatement(const Statement * stmt);
+
 static void _checkLexicalDeclaration(const LexicalDeclaration * ld);
+
 static void _checkFunctionDeclaration(const FunctionDeclaration * fd);
-static void _checkExpression(const Expression * expression);
+
+static bool _checkExpression(Expression * e);
+
 static void _handleBlock(const Statement * stmt);
+
 static void _handleIf(const Statement * stmt);
+
 static void _handleFor(const Statement * stmt);
+
 static void _handleWhile(const Statement * stmt);
+
 static void _handleTry(const Statement * stmt);
+
 static void _handleExpr(const Statement * stmt);
+
 static void _handleNoop(const Statement * stmt);
-static void _handleBinaryExpr(const Expression * expression);
-static void _handleIdentifierExpr(const Expression * expression);
-static void _handleLiteralExpr(const Expression * expression);
-static void _handleCallExpr(const Expression * expression);
-static void _handleUpdateExpr(const Expression * expression);
-static void _handleNoopExpr(const Expression * expression);
+
+static bool _handleBinaryExpr(Expression * expression);
+
+static bool _handleIdentifierExpr(Expression * e);
+
+static bool _handleLiteralExpr(Expression * e);
+
+static bool _handleCallExpr(Expression * e);
+
+static bool _handleUpdateExpr(Expression * e);
+
+static bool _handleNoopExpr(Expression * e);
+
 static void _checkLexicalDeclaration(const LexicalDeclaration * ld);
+
 static void _checkFunctionDeclaration(const FunctionDeclaration * fd);
-static void _checkExpression(const Expression * expression);
-static void _checkIdentifier(const char * id, SymKind kind);
-static void _checkIdentifierExpr(const Expression * expression);
-static void _checkLiteralExpr(const Expression * expression);
-static void _checkCallExpr(const Expression * expression);
-static void _checkUpdateExpr(const Expression * expression);
-static void _checkNoopExpr(const Expression * expression);
+
+static bool _checkExpression(Expression * e);
+
 static const SymbolInfo * _lookupSymbol(const char * id);
+
 static void _rejectConstWrite(const Expression * expression);
 
-static boolean _addSymbol(const char * id, SymKind kind);
-static boolean _addParam(const char * id);
+static bool _newIntegerLiteral(Expression * expression, int value);
+
+static bool _newBooleanLiteral(Expression * expression, bool value);
+
+static bool _newStringLiteral(Expression * expression, const char * left, const char * right);
+
+static bool _addSymbol(const char * id, SymKind kind);
+
+static bool _addParam(const char * id);
+
+static void _replaceWithLiteral(Expression * expression, ExpressionType newType, int intVal, const char * strVal);
 
 static StatementHandler _statementHandlers[] = {
         [BLOCK_STATEMENT]         = _handleBlock,
@@ -59,6 +87,7 @@ static StatementHandler _statementHandlers[] = {
 };
 
 static ExpressionHandler _expressionHandlers[] = {
+        // Binary expressions
         [ASSIGNMENT]                   = _handleBinaryExpr,
         [SUM_EXPRESSION]               = _handleBinaryExpr,
         [SUB_EXPRESSION]               = _handleBinaryExpr,
@@ -76,10 +105,12 @@ static ExpressionHandler _expressionHandlers[] = {
         [STRICT_INEQUALITY_EXPRESSION] = _handleBinaryExpr,
         [LOGICAL_AND_EXPRESSION]       = _handleBinaryExpr,
         [LOGICAL_OR_EXPRESSION]        = _handleBinaryExpr,
+        // Literal expressions
         [IDENTIFIER]                   = _handleIdentifierExpr,
         [INTEGER_EXPRESSION]           = _handleLiteralExpr,
         [STRING_LITERAL_EXPRESSION]    = _handleLiteralExpr,
         [BOOLEAN_LITERAL_EXPRESSION]   = _handleLiteralExpr,
+
         [CALL_EXPRESSION]              = _handleCallExpr,
         [POSTFIX_INCREMENT_EXPR]       = _handleUpdateExpr,
         [PREFIX_INCREMENT_EXPR]        = _handleUpdateExpr,
@@ -105,7 +136,7 @@ void shutdownSemanticAnalyzerModule(void) {
     }
 }
 
-boolean validateProgram(const Program * program) {
+bool validateProgram(const Program * program) {
     assert(_logger && _symTable && "SemanticAnalyzer not initialised");
     _ok = true;
 
@@ -230,7 +261,7 @@ static void _checkLexicalDeclaration(const LexicalDeclaration * ld) {
     SymKind kind = (ld->type == CONST_DECLARATION) ? SYM_CONST : SYM_LET;
 
     for (VariableDeclarator * vd = ld->declaratorList->head; vd; vd = vd->next) {
-        boolean ok = _addSymbol(vd->identifier, kind);
+        bool ok = _addSymbol(vd->identifier, kind);
 
         if (kind == SYM_CONST && vd->initializer == NULL)
             ERR("const '%s' requires an initializer", vd->identifier);
@@ -257,53 +288,165 @@ static void _checkFunctionDeclaration(const FunctionDeclaration * fd) {
     stExitScope(_symTable);
 }
 
-static void _checkExpression(const Expression * e) {
-    if (!e) return;
+/* returns true if expression is a literal after this call */
+static bool _checkExpression(Expression * e) {
+    if (!e) return false;
     if (e->type < 0 || e->type >= ARRAY_LEN(_expressionHandlers) || !_expressionHandlers[e->type]) {
-        _handleNoopExpr(e);
-        return;
+        return _handleNoopExpr(e);
     }
-    _expressionHandlers[e->type](e);
+    return _expressionHandlers[e->type](e);
 }
 
-static void _handleBinaryExpr(const Expression * e) {
-    if (e->type == ASSIGNMENT) {
-        _rejectConstWrite(e->binaryExpression.leftExpression);
+static bool _handleBinaryExpr(Expression * expression) {
+    if (expression->type == ASSIGNMENT) {
+        _rejectConstWrite(expression->binaryExpression.leftExpression);
     }
 
-    _checkExpression(e->binaryExpression.leftExpression);
-    _checkExpression(e->binaryExpression.rightExpression);
+    bool lLit = _checkExpression(expression->binaryExpression.leftExpression);
+    bool rLit = _checkExpression(expression->binaryExpression.rightExpression);
+    if (!lLit || !rLit) {
+        return false;
+    }
+
+    Expression * L = expression->binaryExpression.leftExpression;
+    Expression * R = expression->binaryExpression.rightExpression;
+    int lv = L->value;
+    int rv = R->value;
+    int lt = L->type;
+    int rt = R->type;
+
+    switch (expression->type) {
+        case SUM_EXPRESSION:
+            if (lt == STRING_LITERAL_EXPRESSION && rt == STRING_LITERAL_EXPRESSION) {
+                // fold  "foo" + "bar"  →  "foobar"
+                return _newStringLiteral(expression, L->string, R->string);
+            }
+            // fall back to numeric addition when both sides are integers
+            if (lt == INTEGER_EXPRESSION && rt == INTEGER_EXPRESSION) {
+                return _newIntegerLiteral(expression, lv + rv);
+            }
+            return false;
+
+        case SUB_EXPRESSION:
+            return _newIntegerLiteral(expression, lv - rv);
+        case MULTIPLICATION_EXPRESSION:
+            return _newIntegerLiteral(expression, lv * rv);
+        case LOGICAL_AND_EXPRESSION:
+            return _newBooleanLiteral(expression, lv && rv);
+        case LOGICAL_OR_EXPRESSION:
+            return _newBooleanLiteral(expression, lv || rv);
+
+        case DIVISION_EXPRESSION:
+        case REMAINDER_EXPRESSION:
+            if (rv == 0) {
+                ERR("division by zero");
+                return false;
+            }
+            return (expression->type == DIVISION_EXPRESSION)
+                   ? _newIntegerLiteral(expression, lv / rv)
+                   : _newIntegerLiteral(expression, lv % rv);
+
+        case EXPONENTIATION_EXPRESSION:
+            return _newIntegerLiteral(expression, (int) pow(lv, rv));
+        case LESS_EXPRESSION:
+            return _newBooleanLiteral(expression, lv < rv);
+        case LESS_EQUAL_EXPRESSION:
+            return _newBooleanLiteral(expression, lv <= rv);
+        case GREATER_EXPRESSION:
+            return _newBooleanLiteral(expression, lv > rv);
+        case GREAT_EQUAL_EXPRESSION:
+            return _newBooleanLiteral(expression, lv >= rv);
+        case EQUALITY_EXPRESSION:
+            return _newBooleanLiteral(expression, lv == rv);
+        case INEQUALITY_EXPRESSION:
+            return _newBooleanLiteral(expression, lv != rv);
+
+        case STRICT_EQUALITY_EXPRESSION:
+            return _newBooleanLiteral(expression,
+                                      lv == rv &&
+                                      lt == INTEGER_EXPRESSION && rt == INTEGER_EXPRESSION);
+
+        case STRICT_INEQUALITY_EXPRESSION:
+            return _newBooleanLiteral(expression,
+                                      lv != rv ||
+                                      lt != INTEGER_EXPRESSION || rt != INTEGER_EXPRESSION);
+
+        default:
+            break;
+    }
+    return false;
 }
 
-static void _handleIdentifierExpr(const Expression * e) {
+
+static bool _newStringLiteral(Expression * expression, const char * left, const char * right) {
+    if (left && right) {
+        char * newStr = calloc(1, strlen(left) + strlen(right) + 1);
+        if (!newStr) {
+            ERR("out of memory while concatenating strings");
+            return false;
+        }
+        strcpy(newStr, left);
+        strcat(newStr, right);
+        _replaceWithLiteral(expression, STRING_LITERAL_EXPRESSION, 0, newStr);
+        free(newStr);
+    } else {
+        _replaceWithLiteral(expression, STRING_LITERAL_EXPRESSION, 0, left ? left : right);
+    }
+    return true;
+}
+
+static void _replaceWithLiteral(Expression * expression, ExpressionType newType,
+                                int intVal, const char * strVal) {
+    assert(expression && "Expression cannot be NULL");
+
+    if (expression->type >= ASSIGNMENT && expression->type <= SUM_EXPRESSION) {
+        releaseExpression(expression->binaryExpression.leftExpression);
+        releaseExpression(expression->binaryExpression.rightExpression);
+    } else if (expression->type == CALL_EXPRESSION) {
+        releaseCallExpression(expression->callExpression);
+    }
+
+    expression->type = newType;
+    if (newType == INTEGER_EXPRESSION || newType == BOOLEAN_LITERAL_EXPRESSION) {
+        expression->value = intVal;
+    } else if (newType == STRING_LITERAL_EXPRESSION) {
+        expression->string = strdup(strVal ? strVal : "");
+    }
+}
+
+
+static bool _handleIdentifierExpr(Expression * e) {
     if (!stLookup(_symTable, e->identifierName))
         ERR("use of undeclared identifier '%s'", e->identifierName);
+    return false;
 }
 
-static void _handleLiteralExpr(const Expression * e) {
-    (void) e; // Always valid, nothing to do
+static bool _handleLiteralExpr(Expression * e) {
+    return true; // Always valid, nothing to do
 }
 
-static void _handleCallExpr(const Expression * e) {
+static bool _handleCallExpr(Expression * e) {
     _checkExpression(e->callExpression->callee);
     if (e->callExpression->argumentList) {
         for (Argument * a = e->callExpression->argumentList->head; a; a = a->next) {
             _checkExpression(a->expression);
         }
     }
+    return false;
 }
 
-static void _handleUpdateExpr(const Expression * e) {
+static bool _handleUpdateExpr(Expression * e) {
     _rejectConstWrite(e->updateOp->operand);
     _checkExpression(e->updateOp->operand);
+    return false;
 }
 
-static void _handleNoopExpr(const Expression * e) {
-    (void) e; // No action
+static bool _handleNoopExpr(Expression * e) {
+    return false; // No action
 }
 
 /* Try to enter a new symbol in the current scope. */
-static boolean _addSymbol(const char * id, SymKind kind) {
+static bool _addSymbol(const char * id, SymKind kind) {
     if (!stInsert(_symTable, id, kind)) {
         ERR("duplicate declaration of '%s' in the same scope", id);
         return false;
@@ -311,7 +454,7 @@ static boolean _addSymbol(const char * id, SymKind kind) {
     return true;
 }
 
-static boolean _addParam(const char * id) {
+static bool _addParam(const char * id) {
     if (!stInsert(_symTable, id, SYM_LET)) {
         ERR("duplicate parameter name '%s'", id);
         return false;
@@ -335,4 +478,14 @@ static void _rejectConstWrite(const Expression * expression) {
     if (info && info->kind == SYM_CONST) {
         ERR("cannot modify '%s' as it declared as constant.", expression->identifierName);
     }
+}
+
+static bool _newIntegerLiteral(Expression * expression, int value) {
+    _replaceWithLiteral(expression, INTEGER_EXPRESSION, value, NULL);
+    return true;
+}
+
+static bool _newBooleanLiteral(Expression * expression, bool value) {
+    _replaceWithLiteral(expression, BOOLEAN_LITERAL_EXPRESSION, value, NULL);
+    return true;
 }
