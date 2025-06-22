@@ -177,7 +177,7 @@ static void _emitBooleanLiteral(Expression * expression) {
         logError(_logger, "Attempt to generate output for a NULL boolean literal expression.");
         return;
     }
-    EMIT("%s", expression->value ? "true" : "false");
+    EMIT("%s", expression->value ? "!0" : "!1");
 }
 
 static void _emitUpdateOp(Expression * expression, const char * operator) {
