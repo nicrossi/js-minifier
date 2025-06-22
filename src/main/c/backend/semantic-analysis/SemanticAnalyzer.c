@@ -126,6 +126,7 @@ void initializeSemanticAnalyzerModule(void) {
 }
 
 void shutdownSemanticAnalyzerModule(void) {
+    stPurge();
     if (_symTable) {
         stDestroy(_symTable);
         _symTable = NULL;

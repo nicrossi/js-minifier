@@ -44,4 +44,9 @@ bool stInsert(SymbolTable * st, const char * name, SymKind kind);
  * */
 const SymbolInfo * stLookup(const SymbolTable * st, const char * name);
 
+/* Purges all zombie frames, freeing their resources.
+ * This is called at the end of the compilation.
+ * */
+void stPurge(void);
+
 #endif

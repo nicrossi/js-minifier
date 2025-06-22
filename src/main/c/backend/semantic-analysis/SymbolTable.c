@@ -12,12 +12,16 @@ typedef struct Entry {
 /* A scope frame  (hash table + pointer to enclosing frame) */
 typedef struct Frame {
     Entry * bucket[BUCKET_SIZE];
-    struct Frame *parent;
+    struct Frame * parent;
+    struct Frame * nextZombie;
 } Frame;
+
+// List of frames that have been pooped but not yet destroyed.
+static Frame * zombies = NULL;
 
 /* Pointer to the current stack top */
 struct SymbolTable {
-    Frame *top;
+    Frame * top;
 };
 
 static Frame * _frameCreate(Frame * parent) {
@@ -46,6 +50,15 @@ static const SymbolInfo * _lookupEntry(Entry * entry, const char * name) {
     return (strcmp(entry->name, name) == 0)
            ? &entry->info
            : _lookupEntry(entry->next, name);
+}
+
+static const SymbolInfo * _lookupChain(const Frame * chain, uint32_t hash, const char * name) {
+    while (chain) {
+        const SymbolInfo * info = _lookupEntry(chain->bucket[hash], name);
+        if (info) return info;
+        chain = chain->nextZombie;
+    }
+    return NULL;
 }
 
 static const SymbolInfo * _lookupFrame(const Frame * frame, uint32_t hash, const char * name) {
@@ -129,11 +142,19 @@ void stExitScope(SymbolTable * st) {
         // Trying to pop the global scope – ignore
         return;
     }
-    Frame * child = st->top;
-    Frame * parent = child->parent;
-    _adoptEntries(parent, child);
-    _frameDestroy(st->top);
-    st->top = parent;
+
+    Frame * dead = st->top;
+    st->top = dead->parent;
+    dead->nextZombie = zombies;
+    zombies = dead;
+}
+
+void stPurge(void) {
+    while (zombies) {
+        Frame * next = zombies->nextZombie;
+        _frameDestroy(zombies);
+        zombies = next;
+    }
 }
 
 bool stInsert(SymbolTable * st, const char * name, SymKind kind) {
@@ -154,5 +175,8 @@ bool stInsert(SymbolTable * st, const char * name, SymKind kind) {
 
 const SymbolInfo * stLookup(const SymbolTable * st, const char *name) {
     uint32_t h = hash(name);
-    return _lookupFrame(st->top, h, name);
+    const SymbolInfo * info = _lookupFrame(st->top, h, name);
+    if (info) return info;
+
+    return _lookupChain(zombies, h, name);
 }
