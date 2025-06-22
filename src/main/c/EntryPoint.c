@@ -50,7 +50,7 @@ const int main(const int count, const char ** arguments) {
             compilationStatus = FAILED;
         } else {
             logDebugging(logger, "Semantic analysis completed with status: SUCCESS");
-            //generate(&compilerState);
+            generate(&compilerState);
         }
 		// ...end of the Backend. -----------------------------------------------------------------
 		// ----------------------------------------------------------------------------------------
