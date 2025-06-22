@@ -44,6 +44,7 @@ static const SymbolInfo * _lookupSymbol(const char * id);
 static void _rejectConstWrite(const Expression * expression);
 
 static boolean _addSymbol(const char * id, SymKind kind);
+static boolean _addParam(const char * id);
 
 static StatementHandler _statementHandlers[] = {
         [BLOCK_STATEMENT]         = _handleBlock,
@@ -249,7 +250,7 @@ static void _checkFunctionDeclaration(const FunctionDeclaration * fd) {
     stEnterScope(_symTable);
 
     for (VariableDeclarator * p = fd->parameterList->head; p; p = p->next) {
-        _addSymbol(p->identifier, SYM_LET);
+        _addParam(p->identifier);
     }
 
     _checkStatementList(fd->body);
@@ -305,6 +306,14 @@ static void _handleNoopExpr(const Expression * e) {
 static boolean _addSymbol(const char * id, SymKind kind) {
     if (!stInsert(_symTable, id, kind)) {
         ERR("duplicate declaration of '%s' in the same scope", id);
+        return false;
+    }
+    return true;
+}
+
+static boolean _addParam(const char * id) {
+    if (!stInsert(_symTable, id, SYM_LET)) {
+        ERR("duplicate parameter name '%s'", id);
         return false;
     }
     return true;
