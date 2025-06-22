@@ -1,3 +1,4 @@
+let i = true;
 while (i < 3) {
     do {
         continue;
