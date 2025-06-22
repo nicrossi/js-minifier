@@ -1,1 +1,4 @@
+function power(base, exponent) {}
+
+let x = 2;
 const y = power(x,2);

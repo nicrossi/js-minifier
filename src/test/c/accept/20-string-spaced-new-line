@@ -1,1 +1,1 @@
-real_talk = "Hey! What's all the fluff with this parser thing?\nIDK dude, drunk me thought it was a good idea.\n";
+const real_talk = "Hey! What's all the fluff with this parser thing?\nIDK dude, drunk me thought it was a good idea.\n";

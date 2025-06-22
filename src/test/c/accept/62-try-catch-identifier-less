@@ -1,3 +1,4 @@
+let bar;
 try {
   const foo = bar;           // bar is undefined – pretend this is risky
 } catch {

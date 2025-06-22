@@ -1,1 +1,1 @@
-s = "Backslash '\\' should be escaped";
+const s = "Backslash '\\' should be escaped";

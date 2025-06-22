@@ -1,3 +1,4 @@
+let i = 0;
 do {
     // Nothing
 } while (i > 0);

@@ -4,7 +4,7 @@
 
 function foo(a = 1, b = 2, c = 3) {
   // strict inequality
-  const x = a !== b;
+  let x = a !== b;
 
   // full if / else-if / else chain
   if (a === 1) {

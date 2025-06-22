@@ -1,3 +1,4 @@
+let a, b, c, x, y, z;
 let ok1 = a && b;
 let ok2 = a || b && c;    // && binds tighter than ||
 let ok3 = (a || b) && c;

@@ -1,1 +1,2 @@
+let num;
 const result = ~num;

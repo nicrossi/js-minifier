@@ -1,6 +1,7 @@
+let a, b;
 if(a == 2) {
     if (1 == 1) {
-     let a = 2;
+     const b = 2;
     }
 } else {
     b = 3;

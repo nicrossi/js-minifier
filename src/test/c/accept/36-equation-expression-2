@@ -1,1 +1,2 @@
+let x0, v0, a, t;
 const xt = x0 + v0 * t + (1/2) * a * t * t;

@@ -1,5 +1,6 @@
+let a = 1;
 if (a == 1) {
-    const a = 1;
+    a = 1;
     const foo = a;
 } else {
 

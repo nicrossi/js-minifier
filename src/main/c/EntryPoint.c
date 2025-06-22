@@ -8,6 +8,7 @@
 #include "shared/Logger.h"
 #include "shared/String.h"
 #include "backend/code-generation/Generator.h"
+#include "backend/semantic-analysis/SemanticAnalyzer.h"
 
 /**
  * The main entry-point of the entire application. If you use "strtok" to
@@ -21,6 +22,7 @@ const int main(const int count, const char ** arguments) {
 	initializeSyntacticAnalyzerModule();
 	initializeAbstractSyntaxTreeModule();
 	initializeGeneratorModule();
+    initializeSemanticAnalyzerModule();
 
 	// Logs the arguments of the application.
 	for (int k = 0; k < count; ++k) {
@@ -42,7 +44,14 @@ const int main(const int count, const char ** arguments) {
 	if (syntacticAnalysisStatus == ACCEPT) {
 		// ----------------------------------------------------------------------------------------
 		// Beginning of the Backend... ------------------------------------------------------------
-        generate(&compilerState);
+        boolean isValidProgram = validateProgram(program);
+        if (!isValidProgram) {
+            logError(logger, "Semantic analysis failed. It's not a valid JavaScript program.");
+            compilationStatus = FAILED;
+        } else {
+            logDebugging(logger, "Semantic analysis completed with status: SUCCESS");
+            //generate(&compilerState);
+        }
 		// ...end of the Backend. -----------------------------------------------------------------
 		// ----------------------------------------------------------------------------------------
 	}
@@ -58,6 +67,7 @@ const int main(const int count, const char ** arguments) {
 	shutdownSyntacticAnalyzerModule();
 	shutdownBisonActionsModule();
 	shutdownFlexActionsModule();
+    shutdownSemanticAnalyzerModule();
 	logDebugging(logger, "Compilation is done.");
 	destroyLogger(logger);
 	return compilationStatus;

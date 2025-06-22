@@ -1,4 +1,10 @@
+function compute() {}
+function fallback() {}
+function log() {}
+function cleanup() {}
+
 try {
+  let attempts=0, MAX=3;
   let value = compute() || fallback();   // if compute() short-circuits
   if (!value && attempts < MAX) {
     throw "retry";

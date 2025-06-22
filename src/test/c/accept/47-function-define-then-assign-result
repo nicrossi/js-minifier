@@ -6,4 +6,5 @@ function power(base, exponent) {
     return result;
 }
 
+let x = 2;
 const y = power(x, 2) + x * 5 + 1;
