@@ -8,8 +8,60 @@ A Javascript minifier written in C, and leavering a Flex-Bison Compiler. \
 While simple, this minifier will aim to reduce code size through a series of rules, progressing from basic textual
 transformations to more advanced semantic optimizations.
 
-**Check frontend progress** [log](src/main/c/frontend/syntactic-analysis/log.md). \
-**Check backend progress** [log](src/main/c/backend/log.md).
+* [Output file](#writing-output-to-a-file)
+* [Integration-like test](#minification-when--expect-test)
+* Coverage report log
+  * [Frontend](src/main/c/frontend/syntactic-analysis/log.md)
+  * [Backend](src/main/c/backend/log.md)
+
+## Writing output to a file
+
+| Name          | Default  | Description                                                                      |
+|---------------|:--------:|----------------------------------------------------------------------------------|
+| `OUTPUT_FILE` | `stdout` | Instead of writing to `stdout`, set a filename to write the output (Eg. `out.js`) |
+
+## Minification *When / Expect* test
+Using the [test-suite.sh](script/ubuntu/test-suite.sh). You can run integration-like tests to check if the minifier is working as expected.
+
+**SYNOPSIS**\
+```bash
+  test-suite.sh [-savediff] [-dir PATH]
+  test-suite.sh -h | --help
+```
+
+**DESCRIPTION**\
+test-suite.sh executes build/Compiler on every test case found in a
+directory tree (the “test root”) and checks that its output matches
+the expected results stored alongside each test.
+
+     A test case is a directory that contains exactly two files sharing the
+     same basename:
+
+           <name>.when     input text that is piped to build/Compiler
+           <name>.expect   the reference (expected) output
+
+     By default the script looks for test directories under
+
+           src/test/c/integration
+
+     but a different location can be selected with the -dir option.
+
+     After running all tests, the script prints a summary showing how
+     many passed, failed, or were skipped, and exits with a status
+     equal to the number of failures (0 means all tests passed).
+
+**DIRECTORY STRUCTURE**\
+One level of directories is expected beneath the test root:
+
+           test-root/
+           ├── test-case-1/
+           │   ├── program.when
+           │   └── program.expect
+           ├── test-case-2/
+           │   ├── other_program.when
+           │   └── other_program.expect
+           └── …
+
 # Flex-Bison-Compiler
 
 A base compiler example, developed with Flex and Bison.
