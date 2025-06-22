@@ -13,6 +13,7 @@ typedef void (* ExpressionHandler)(const Expression * expression);
 static void _checkProgram(const Program * program);
 static void _checkStatementList(const StatementList * statementList);
 static void _checkStatementListItem(const StatementListItem * it);
+static void _checkStatementListRec(const StatementListItem * it);
 static void _checkStatement(const Statement * stmt);
 static void _checkLexicalDeclaration(const LexicalDeclaration * ld);
 static void _checkFunctionDeclaration(const FunctionDeclaration * fd);
@@ -39,8 +40,8 @@ static void _checkLiteralExpr(const Expression * expression);
 static void _checkCallExpr(const Expression * expression);
 static void _checkUpdateExpr(const Expression * expression);
 static void _checkNoopExpr(const Expression * expression);
-
-static void _declareFunction(const FunctionDeclaration * fd);
+static const SymbolInfo * _lookupSymbol(const char * id);
+static void _rejectConstWrite(const Expression * expression);
 
 static boolean _addSymbol(const char * id, SymKind kind);
 
@@ -136,7 +137,16 @@ static void _checkStatementList(const StatementList * statementList) {
 
 static void _checkStatementListItem(const StatementListItem * it) {
     if (it->type == DECLARATION_STATEMENT) {
-        _checkLexicalDeclaration(it->declaration->lexicalDeclaration);
+        switch (it->declaration->type) {
+            case FUNCTION:
+                _checkFunctionDeclaration(it->declaration->functionDeclaration);
+                break;
+            case LEXICAL:
+                _checkLexicalDeclaration(it->declaration->lexicalDeclaration);
+                break;
+            default:
+                _handleNoop(NULL);
+        }
     } else {
         _checkStatement(it->statement);
     }
@@ -256,6 +266,10 @@ static void _checkExpression(const Expression * e) {
 }
 
 static void _handleBinaryExpr(const Expression * e) {
+    if (e->type == ASSIGNMENT) {
+        _rejectConstWrite(e->binaryExpression.leftExpression);
+    }
+
     _checkExpression(e->binaryExpression.leftExpression);
     _checkExpression(e->binaryExpression.rightExpression);
 }
@@ -279,13 +293,13 @@ static void _handleCallExpr(const Expression * e) {
 }
 
 static void _handleUpdateExpr(const Expression * e) {
+    _rejectConstWrite(e->updateOp->operand);
     _checkExpression(e->updateOp->operand);
 }
 
 static void _handleNoopExpr(const Expression * e) {
     (void) e; // No action
 }
-
 
 /* Try to enter a new symbol in the current scope. */
 static boolean _addSymbol(const char * id, SymKind kind) {
@@ -294,4 +308,22 @@ static boolean _addSymbol(const char * id, SymKind kind) {
         return false;
     }
     return true;
+}
+
+/* Look up the symbol for a bare-identifier expression.
+ * Returns NULL if the expression is not an identifier or the identifier is
+ * unknown in the current environment.
+ * */
+static const SymbolInfo * _lookupIdentifierExpr(const Expression * expression) {
+    return (expression && expression->type == IDENTIFIER)
+           ? stLookup(_symTable, expression->identifierName)
+           : NULL;
+}
+
+/* Fail if the l-value is a const. */
+static void _rejectConstWrite(const Expression * expression) {
+    const SymbolInfo * info = _lookupIdentifierExpr(expression);
+    if (info && info->kind == SYM_CONST) {
+        ERR("cannot modify '%s' as it declared as constant.", expression->identifierName);
+    }
 }
